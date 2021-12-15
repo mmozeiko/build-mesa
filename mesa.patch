@@ -1,0 +1,93 @@
+diff --git meson.build meson.build
+index bd54e78..d1b3026 100644
+--- meson.build
++++ meson.build
+@@ -1449,7 +1449,7 @@ if cc.links('int main() { return 0; }',
+             args : '-Wl,--version-script=@0@'.format(
+               join_paths(meson.source_root(), 'build-support/conftest.map')),
+             name : 'version-script')
+-  with_ld_version_script = true
++  with_ld_version_script = false
+ endif
+ with_ld_dynamic_list = false
+ if cc.links('int main() { return 0; }',
+diff --git src/gallium/auxiliary/tgsi/tgsi_ureg.c src/gallium/auxiliary/tgsi/tgsi_ureg.c
+index eedba34..06d8086 100644
+--- src/gallium/auxiliary/tgsi/tgsi_ureg.c
++++ src/gallium/auxiliary/tgsi/tgsi_ureg.c
+@@ -474,7 +474,7 @@ out:
+ 
+ struct ureg_dst
+ ureg_DECL_output_masked(struct ureg_program *ureg,
+-                        unsigned name,
++                        enum tgsi_semantic name,
+                         unsigned index,
+                         unsigned usage_mask,
+                         unsigned array_id,
+diff --git src/gallium/drivers/llvmpipe/lp_tex_sample.h src/gallium/drivers/llvmpipe/lp_tex_sample.h
+index 51813ea..652f0fc 100644
+--- src/gallium/drivers/llvmpipe/lp_tex_sample.h
++++ src/gallium/drivers/llvmpipe/lp_tex_sample.h
+@@ -38,7 +38,7 @@ struct lp_image_static_state;
+ /**
+  * Whether texture cache is used for s3tc textures.
+  */
+-#define LP_USE_TEXTURE_CACHE 0
++#define LP_USE_TEXTURE_CACHE 1
+ 
+ /**
+  * Pure-LLVM texture sampling code generator.
+diff --git src/gallium/frontends/wgl/stw_device.c src/gallium/frontends/wgl/stw_device.c
+index 8ffe752..825d05f 100644
+--- src/gallium/frontends/wgl/stw_device.c
++++ src/gallium/frontends/wgl/stw_device.c
+@@ -248,7 +248,7 @@ stw_cleanup(void)
+    FREE(stw_dev->smapi);
+    stw_dev->stapi->destroy(stw_dev->stapi);
+ 
+-   stw_dev->screen->destroy(stw_dev->screen);
++   if (stw_dev->screen) stw_dev->screen->destroy(stw_dev->screen);
+ 
+    /* glapi is statically linked: we can call the local destroy function. */
+ #ifdef _GLAPI_NO_EXPORTS
+diff --git src/gallium/targets/libgl-gdi/meson.build src/gallium/targets/libgl-gdi/meson.build
+index da7430c..b380e00 100644
+--- src/gallium/targets/libgl-gdi/meson.build
++++ src/gallium/targets/libgl-gdi/meson.build
+@@ -40,6 +40,7 @@ libopengl32 = shared_library(
+   link_with : [
+     libgallium_wgl, libglapi_static, libglapi
+   ],
++  link_whole : [ libgallium_wgl ],
+   dependencies : [
+     idep_mesautil
+   ],
+diff --git src/gallium/targets/wgl/meson.build src/gallium/targets/wgl/meson.build
+index 27afb1f..87037f4 100644
+--- src/gallium/targets/wgl/meson.build
++++ src/gallium/targets/wgl/meson.build
+@@ -30,10 +30,9 @@ else
+   wgl_def = 'gallium_wgl.def'
+ endif
+ 
+-libgallium_wgl = shared_library(
++libgallium_wgl = static_library(
+   'gallium_wgl',
+   ['wgl.c'],
+-  vs_module_defs : wgl_def,
+   include_directories : [
+     inc_include, inc_src, inc_mapi, inc_mesa, inc_gallium, inc_gallium_aux, inc_wgl, inc_gallium_winsys, inc_gallium_winsys_sw, inc_gallium_drivers,
+   ],
+diff --git src/gallium/winsys/d3d12/wgl/d3d12_wgl_public.h src/gallium/winsys/d3d12/wgl/d3d12_wgl_public.h
+index a690ade..eb4bca6 100644
+--- src/gallium/winsys/d3d12/wgl/d3d12_wgl_public.h
++++ src/gallium/winsys/d3d12/wgl/d3d12_wgl_public.h
+@@ -33,7 +33,7 @@ extern "C" {
+ struct pipe_resource;
+ struct pipe_screen;
+ struct pipe_context;
+-struct stw_winsys;
++struct sw_winsys;
+ 
+ struct pipe_screen *
+ d3d12_wgl_create_screen(struct sw_winsys *winsys,

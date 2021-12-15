@@ -1,0 +1,66 @@
+
+name: build-mesa
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: windows-2022
+    steps:
+
+      - name: checkout
+        uses: actions/checkout@v2          
+
+      - name: build
+        id: build
+        shell: cmd
+        run: call build.cmd
+
+      - name: release
+        id: release
+        if: steps.build.outputs.MESA_VERSION != ''
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.build.outputs.MESA_VERSION }}
+          release_name: ${{ steps.build.outputs.MESA_VERSION }}
+          body: |
+            [mesa ${{ steps.build.outputs.MESA_VERSION }} release notes](https://docs.mesa3d.org/relnotes/${{ steps.build.outputs.MESA_VERSION }}.html)
+            [llvm ${{ steps.build.outputs.LLVM_VERSION }} release notes](https://releases.llvm.org/${{ steps.build.outputs.LLVM_VERSION }}/docs/ReleaseNotes.html)
+
+      - name: upload llvmpipe
+        id: upload-llvmpipe
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.release.outputs.upload_url }}
+          asset_path: "mesa-llvmpipe-${{ steps.build.outputs.MESA_VERSION }}.zip"
+          asset_name: "mesa-llvmpipe-${{ steps.build.outputs.MESA_VERSION }}.zip"
+          asset_content_type: application/zip
+
+      - name: upload osmesa
+        id: upload-osmesa
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.release.outputs.upload_url }}
+          asset_path: "mesa-osmesa-${{ steps.build.outputs.MESA_VERSION }}.zip"
+          asset_name: "mesa-osmesa-${{ steps.build.outputs.MESA_VERSION }}.zip"
+          asset_content_type: application/zip
+
+      - name: upload d3d12
+        id: upload-d3d12
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.release.outputs.upload_url }}
+          asset_path: "mesa-d3d12-${{ steps.build.outputs.MESA_VERSION }}.zip"
+          asset_name: "mesa-d3d12-${{ steps.build.outputs.MESA_VERSION }}.zip"
+          asset_content_type: application/zip

@@ -1,0 +1,11 @@
+llvm
+llvm.src
+llvm.build
+mesa-*
+mesa.src
+mesa.build
+archive-*
+winflexbison
+*.zip
+*.exe
+
