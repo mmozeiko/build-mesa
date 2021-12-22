@@ -2,7 +2,7 @@
 setlocal enabledelayedexpansion
 
 set LLVM_VERSION=13.0.0
-set MESA_VERSION=21.3.1
+set MESA_VERSION=21.3.2
 
 set PATH=%CD%\llvm\bin;%CD%\winflexbison;%PATH%
 
