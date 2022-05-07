@@ -1,8 +1,8 @@
 @echo off
 setlocal enabledelayedexpansion
 
-set LLVM_VERSION=14.0.0
-set MESA_VERSION=22.0.1
+set LLVM_VERSION=14.0.3
+set MESA_VERSION=22.0.3
 
 set PATH=%CD%\llvm\bin;%CD%\winflexbison;%PATH%
 
@@ -180,23 +180,6 @@ meson setup ^
   -Dgallium-drivers=d3d12 || exit /b 1
 ninja -C mesa.build install || exit /b 1
 
-rem *** mesa d3d12egl ***
-
-rd /s /q mesa.build 1>nul 2>nul
-meson setup ^
-  mesa.build ^
-  mesa.src ^
-  --prefix="%CD%\mesa-d3d12" ^
-  --default-library=static ^
-  -Dbuildtype=release ^
-  -Db_ndebug=true ^
-  -Db_vscrt=mt ^
-  -Dllvm=disabled ^
-  -Dplatforms=windows ^
-  -Dosmesa=false ^
-  -Dgallium-drivers=d3d12 || exit /b 1
-ninja -C mesa.build install || exit /b 1
-
 rem *** done ***
 rem output is in mesa-d3d12 and mesa-llvmpipe folders
 
@@ -217,9 +200,12 @@ if "%GITHUB_WORKFLOW%" neq "" (
 
   mkdir archive-d3d12
   pushd archive-d3d12
-  copy /y ..\mesa-d3d12\bin\opengl32.dll                                .
-  rem "%WindowsSdkVerBinPath%x64\dxil.dll"
-  copy /y "%ProgramFiles(x86)%\Windows Kits\10\Redist\D3D\x64\dxil.dll" .
+  copy /y ..\mesa-d3d12\bin\opengl32.dll .
+  if exist "%ProgramFiles(x86)%\Windows Kits\10\Redist\D3D\x64\dxil.dll" (
+    copy /y "%ProgramFiles(x86)%\Windows Kits\10\Redist\D3D\x64\dxil.dll" .
+  ) else if exist "%WindowsSdkVerBinPath%x64\dxil.dll" (
+    copy /y "%WindowsSdkVerBinPath%x64\dxil.dll" .
+  )
   %SZIP% a -mx=9 ..\mesa-d3d12-%MESA_VERSION%.zip 
   popd
 
