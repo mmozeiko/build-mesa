@@ -1,8 +1,8 @@
 @echo off
 setlocal enabledelayedexpansion
 
-set LLVM_VERSION=14.0.3
-set MESA_VERSION=22.1.0
+set LLVM_VERSION=15.0.1
+set MESA_VERSION=22.2.0
 
 set PATH=%CD%\llvm\bin;%CD%\winflexbison;%PATH%
 
@@ -83,7 +83,12 @@ echo Downloading llvm
 curl -sfL https://github.com/llvm/llvm-project/releases/download/llvmorg-%LLVM_VERSION%/llvm-%LLVM_VERSION%.src.tar.xz ^
   | %SZIP% x -bb0 -txz -si -so ^
   | %SZIP% x -bb0 -ttar -si -aoa 1>nul 2>nul
+curl -sfL https://github.com/llvm/llvm-project/releases/download/llvmorg-%LLVM_VERSION%/cmake-%LLVM_VERSION%.src.tar.xz ^
+  | %SZIP% x -bb0 -txz -si -so ^
+  | %SZIP% x -bb0 -ttar -si -aoa 1>nul 2>nul
 move llvm-%LLVM_VERSION%.src llvm.src
+move cmake-%LLVM_VERSION%.src\Modules\* llvm.src\cmake\Modules\
+rd /S /Q cmake-%LLVM_VERSION%.src 1>nul 2>nul
 
 echo Downloading mesa
 curl -sfL https://archive.mesa3d.org//mesa-%MESA_VERSION%.tar.xz ^
@@ -146,7 +151,7 @@ cmake ^
 ninja -C llvm.build
 ninja -C llvm.build install || exit /b 1
 
-rem *** mesa llvmpipe ***
+rem *** llvmpipe ***
 
 rd /s /q mesa.build 1>nul 2>nul
 meson setup ^
@@ -160,10 +165,11 @@ meson setup ^
   -Dllvm=enabled ^
   -Dplatforms=windows ^
   -Dosmesa=true ^
-  -Dgallium-drivers=swrast || exit /b 1
+  -Dgallium-drivers=swrast ^
+  -Dvulkan-drivers=swrast || exit /b 1
 ninja -C mesa.build install || exit /b 1
 
-rem *** mesa d3d12 ***
+rem *** d3d12 ***
 
 rd /s /q mesa.build 1>nul 2>nul
 meson setup ^
@@ -180,8 +186,26 @@ meson setup ^
   -Dgallium-drivers=d3d12 || exit /b 1
 ninja -C mesa.build install || exit /b 1
 
+rem *** zink ***
+
+rd /s /q mesa.build 1>nul 2>nul
+git apply -p0 --directory=mesa.src mesa-zink.patch || exit /b 1
+meson setup ^
+  mesa.build ^
+  mesa.src ^
+  --prefix="%CD%\mesa-zink" ^
+  --default-library=static ^
+  -Dbuildtype=release ^
+  -Db_ndebug=true ^
+  -Db_vscrt=mt ^
+  -Dllvm=disabled ^
+  -Dplatforms=windows ^
+  -Dosmesa=false ^
+  -Dgallium-drivers=zink || exit /b 1
+ninja -C mesa.build install || exit /b 1
+
 rem *** done ***
-rem output is in mesa-d3d12 and mesa-llvmpipe folders
+rem output is in mesa-llvmpipe, mesa-d3d12, mesa-zink folders
 
 if "%GITHUB_WORKFLOW%" neq "" (
   mkdir archive-llvmpipe
@@ -198,6 +222,15 @@ if "%GITHUB_WORKFLOW%" neq "" (
   %SZIP% a -mx=9 ..\mesa-osmesa-%MESA_VERSION%.zip 
   popd
 
+  mkdir archive-lavapipe
+  pushd archive-lavapipe
+  copy /y ..\mesa-llvmpipe\bin\vulkan_lvp.dll .
+  python ..\mesa.src\src\vulkan\util\vk_icd_gen.py --api-version 1.1 --xml ..\mesa.src\src\vulkan\registry\vk.xml --lib-path vulkan_lvp.dll --out lvp_icd.x86_64.json
+  copy /y ..\mesa-llvmpipe\share\vulkan\icd.d\lvp_icd.x86_64.json .
+
+  %SZIP% a -mx=9 ..\mesa-lavapipe-%MESA_VERSION%.zip 
+  popd
+
   mkdir archive-d3d12
   pushd archive-d3d12
   copy /y ..\mesa-d3d12\bin\opengl32.dll .
@@ -207,6 +240,12 @@ if "%GITHUB_WORKFLOW%" neq "" (
     copy /y "%WindowsSdkVerBinPath%x64\dxil.dll" .
   )
   %SZIP% a -mx=9 ..\mesa-d3d12-%MESA_VERSION%.zip 
+  popd
+
+  mkdir archive-zink
+  pushd archive-zink
+  copy /y ..\mesa-zink\bin\opengl32.dll .
+  %SZIP% a -mx=9 ..\mesa-zink-%MESA_VERSION%.zip 
   popd
 
   echo ::set-output name=LLVM_VERSION::%LLVM_VERSION%

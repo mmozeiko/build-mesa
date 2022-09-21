@@ -1,0 +1,13 @@
+diff --git src/vulkan/util/meson.build src/vulkan/util/meson.build
+index 8f232fa..ef64ab9 100644
+--- src/vulkan/util/meson.build
++++ src/vulkan/util/meson.build
+@@ -95,7 +95,7 @@ vk_extensions = custom_target(
+ 
+ libvulkan_util = static_library(
+   'vulkan_util',
+-  [files_vulkan_util, vk_dispatch_table, vk_enum_to_str, vk_extensions],
++  [files_vulkan_util, vk_enum_to_str, vk_extensions],
+   include_directories : [inc_include, inc_src, inc_gallium],
+   dependencies : [vulkan_wsi_deps, idep_mesautil, idep_nir_headers],
+   c_args : [c_msvc_compat_args],

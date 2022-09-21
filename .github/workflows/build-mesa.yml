@@ -30,7 +30,7 @@ jobs:
           release_name: ${{ steps.build.outputs.MESA_VERSION }}
           body: |
             [mesa ${{ steps.build.outputs.MESA_VERSION }} release notes](https://docs.mesa3d.org/relnotes/${{ steps.build.outputs.MESA_VERSION }}.html)
-            [llvm ${{ steps.build.outputs.LLVM_VERSION }} release notes](https://releases.llvm.org/${{ steps.build.outputs.LLVM_VERSION }}/docs/ReleaseNotes.html)
+            [llvm ${{ steps.build.outputs.LLVM_VERSION }} release notes](https://github.com/llvm/llvm-project/releases/tag/llvmorg-${{ steps.build.outputs.LLVM_VERSION }})
 
       - name: upload llvmpipe
         id: upload-llvmpipe
@@ -54,6 +54,17 @@ jobs:
           asset_name: "mesa-osmesa-${{ steps.build.outputs.MESA_VERSION }}.zip"
           asset_content_type: application/zip
 
+      - name: upload lavapipe
+        id: upload-lavapipe
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.release.outputs.upload_url }}
+          asset_path: "mesa-lavapipe-${{ steps.build.outputs.MESA_VERSION }}.zip"
+          asset_name: "mesa-lavapipe-${{ steps.build.outputs.MESA_VERSION }}.zip"
+          asset_content_type: application/zip
+
       - name: upload d3d12
         id: upload-d3d12
         uses: actions/upload-release-asset@v1
@@ -63,4 +74,15 @@ jobs:
           upload_url: ${{ steps.release.outputs.upload_url }}
           asset_path: "mesa-d3d12-${{ steps.build.outputs.MESA_VERSION }}.zip"
           asset_name: "mesa-d3d12-${{ steps.build.outputs.MESA_VERSION }}.zip"
+          asset_content_type: application/zip
+
+      - name: upload zink
+        id: upload-zink
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.release.outputs.upload_url }}
+          asset_path: "mesa-zink-${{ steps.build.outputs.MESA_VERSION }}.zip"
+          asset_name: "mesa-zink-${{ steps.build.outputs.MESA_VERSION }}.zip"
           asset_content_type: application/zip
