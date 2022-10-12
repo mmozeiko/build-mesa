@@ -1,8 +1,8 @@
 @echo off
 setlocal enabledelayedexpansion
 
-set LLVM_VERSION=15.0.1
-set MESA_VERSION=22.2.0
+set LLVM_VERSION=15.0.2
+set MESA_VERSION=22.2.1
 
 set PATH=%CD%\llvm\bin;%CD%\winflexbison;%PATH%
 
@@ -60,7 +60,7 @@ where /q cmake.exe || (
 )
 
 where /q ninja.exe || (
-  curl -Lsf -o ninja-win.zip https://github.com/ninja-build/ninja/releases/download/v1.10.2/ninja-win.zip || exit /b 1
+  curl -Lsf -o ninja-win.zip https://github.com/ninja-build/ninja/releases/download/v1.11.1/ninja-win.zip || exit /b 1
   %SZIP% x -bb0 -y ninja-win.zip 1>nul 2>nul || exit /b 1
   del ninja-win.zip 1>nul 2>nul
 )
@@ -101,9 +101,9 @@ echo Downloading win_flex_bison
 if not exist winflexbison (
   mkdir winflexbison
   pushd winflexbison
-  curl -sfL -o win_flex_bison-2.5.24.zip https://github.com/lexxmark/winflexbison/releases/download/v2.5.24/win_flex_bison-2.5.24.zip || exit /b 1
-  %SZIP% x -bb0 -y win_flex_bison-2.5.24.zip 1>nul 2>nul || exit /b 1
-  del win_flex_bison-2.5.24.zip 1>nul 2>nul
+  curl -sfL -o win_flex_bison.zip https://github.com/lexxmark/winflexbison/releases/download/v2.5.25/win_flex_bison-2.5.25.zip || exit /b 1
+  %SZIP% x -bb0 -y win_flex_bison.zip 1>nul 2>nul || exit /b 1
+  del win_flex_bison.zip 1>nul 2>nul
   popd
 )
 
