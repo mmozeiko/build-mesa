@@ -2,37 +2,24 @@ diff --git meson.build meson.build
 index 250b528..5e9e617 100644
 --- meson.build
 +++ meson.build
-@@ -1523,7 +1523,7 @@ if cc.links('int main() { return 0; }',
-             args : '-Wl,--version-script=@0@'.format(
-               join_paths(meson.source_root(), 'build-support/conftest.map')),
-             name : 'version-script')
--  with_ld_version_script = true
-+  with_ld_version_script = false
+@@ -1541,7 +1541,7 @@ if cc.links('int main() { return 0; }',
+             args : '-Wl,--dynamic-list=@0@'.format(
+               join_paths(meson.current_source_dir(), 'build-support/conftest.dyn')),
+             name : 'dynamic-list')
+-  with_ld_dynamic_list = true
++  with_ld_dynamic_list = false
  endif
- with_ld_dynamic_list = false
- if cc.links('int main() { return 0; }',
-@@ -1710,7 +1710,7 @@ if dep_libudev.found()
+
+ ld_args_build_id = cc.get_supported_link_arguments('-Wl,--build-id=sha1')
+@@ -1722,7 +1722,7 @@ if dep_libudev.found()
    pre_args += '-DHAVE_LIBUDEV'
  endif
- 
+
 -llvm_modules = ['bitwriter', 'engine', 'mcdisassembler', 'mcjit', 'core', 'executionengine', 'scalaropts', 'transformutils', 'instcombine']
 +llvm_modules = ['bitwriter', 'engine', 'mcdisassembler', 'mcjit', 'core', 'executionengine', 'scalaropts', 'transformutils', 'instcombine', 'passes']
  llvm_optional_modules = ['coroutines']
  if with_amd_vk or with_gallium_radeonsi or with_gallium_r600
    llvm_modules += ['amdgpu', 'bitreader', 'ipo']
-diff --git src/gallium/auxiliary/tgsi/tgsi_ureg.c src/gallium/auxiliary/tgsi/tgsi_ureg.c
-index eedba34..06d8086 100644
---- src/gallium/auxiliary/tgsi/tgsi_ureg.c
-+++ src/gallium/auxiliary/tgsi/tgsi_ureg.c
-@@ -474,7 +474,7 @@ out:
- 
- struct ureg_dst
- ureg_DECL_output_masked(struct ureg_program *ureg,
--                        unsigned name,
-+                        enum tgsi_semantic name,
-                         unsigned index,
-                         unsigned usage_mask,
-                         unsigned array_id,
 diff --git src/gallium/drivers/llvmpipe/lp_tex_sample.h src/gallium/drivers/llvmpipe/lp_tex_sample.h
 index 51813ea..652f0fc 100644
 --- src/gallium/drivers/llvmpipe/lp_tex_sample.h
@@ -50,15 +37,15 @@ diff --git src/gallium/frontends/wgl/stw_device.c src/gallium/frontends/wgl/stw_
 index 8ffe752..825d05f 100644
 --- src/gallium/frontends/wgl/stw_device.c
 +++ src/gallium/frontends/wgl/stw_device.c
-@@ -248,7 +248,7 @@ stw_cleanup(void)
+@@ -253,7 +253,7 @@ stw_cleanup(void)
+ 
     FREE(stw_dev->smapi);
-    stw_dev->stapi->destroy(stw_dev->stapi);
  
 -   stw_dev->screen->destroy(stw_dev->screen);
 +   if (stw_dev->screen) stw_dev->screen->destroy(stw_dev->screen);
  
-    /* glapi is statically linked: we can call the local destroy function. */
- #ifdef _GLAPI_NO_EXPORTS
+    stw_tls_cleanup();
+ 
 diff --git src/gallium/targets/libgl-gdi/meson.build src/gallium/targets/libgl-gdi/meson.build
 index 7ddcd8a..8658196 100644
 --- src/gallium/targets/libgl-gdi/meson.build
@@ -75,13 +62,13 @@ diff --git src/gallium/targets/wgl/meson.build src/gallium/targets/wgl/meson.bui
 index 2999ee5..8b92387 100644
 --- src/gallium/targets/wgl/meson.build
 +++ src/gallium/targets/wgl/meson.build
-@@ -30,10 +30,9 @@ wgl_def = custom_target(
-              '--compiler_id', cc.get_argument_syntax(), '--cpu_family', host_machine.cpu_family()]
+@@ -29,10 +29,9 @@ wgl_def = custom_target(
  )
- 
+
+ gallium_wgl_name = get_option('gallium-windows-dll-name')
 -libgallium_wgl = shared_library(
 +libgallium_wgl = static_library(
-   'gallium_wgl',
+   gallium_wgl_name,
    ['wgl.c'],
 -  vs_module_defs : wgl_def,
    include_directories : [
@@ -91,12 +78,12 @@ diff --git src/util/futex.h src/util/futex.h
 index 2a2a00c..5aff5ef 100644
 --- src/util/futex.h
 +++ src/util/futex.h
-@@ -117,7 +117,7 @@ static inline int futex_wait(uint32_t *addr, int32_t value, const struct timespe
-    return futex(addr, FUTEX_WAIT, value, &tsrel, NULL);
- }
- 
--#elif defined(_WIN32) && !defined(WINDOWS_NO_FUTEX)
-+#elif defined(_WIN32) && 0
+@@ -31,7 +31,7 @@
+ #elif defined(__OpenBSD__)
  #define UTIL_FUTEX_SUPPORTED 1
- 
- #include <windows.h>
+ #elif defined(_WIN32) && !defined(WINDOWS_NO_FUTEX)
+-#define UTIL_FUTEX_SUPPORTED 1
++#define UTIL_FUTEX_SUPPORTED 0
+ #else
+ #define UTIL_FUTEX_SUPPORTED 0
+ #endif
