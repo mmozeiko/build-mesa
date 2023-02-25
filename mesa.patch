@@ -2,6 +2,15 @@ diff --git meson.build meson.build
 index 250b528..5e9e617 100644
 --- meson.build
 +++ meson.build
+@@ -634,7 +634,7 @@ if with_gallium_kmsro and (with_platform_x11 and not with_dri3)
+ endif
+ 
+ dep_dxheaders = null_dep
+-if with_gallium_d3d12 or with_microsoft_clc or with_microsoft_vk
++if true or with_gallium_d3d12 or with_microsoft_clc or with_microsoft_vk
+   dep_dxheaders = dependency('directx-headers', required : false)
+   if not dep_dxheaders.found()
+     dep_dxheaders = dependency('DirectX-Headers',
 @@ -1541,7 +1541,7 @@ if cc.links('int main() { return 0; }',
              args : '-Wl,--dynamic-list=@0@'.format(
                join_paths(meson.current_source_dir(), 'build-support/conftest.dyn')),
@@ -11,6 +20,14 @@ index 250b528..5e9e617 100644
  endif
 
  ld_args_build_id = cc.get_supported_link_arguments('-Wl,--build-id=sha1')
+@@ -1166,7 +1166,6 @@ if cc.get_argument_syntax() == 'msvc'
+     '/wd5105',  # macro expansion producing 'defined' has undefined behavior (winbase.h, need Windows SDK upgrade)
+     '/we4020',  # Error when passing the wrong number of parameters
+     '/we4024',  # Error when passing different type of parameter
+-    '/we4189',  # 'identifier' : local variable is initialized but not referenced
+     '/Zc:__cplusplus', #Set __cplusplus macro to match the /std:c++<version> on the command line
+   ]
+   c_args += cc.get_supported_arguments(_trial)
 @@ -1722,7 +1722,7 @@ if dep_libudev.found()
    pre_args += '-DHAVE_LIBUDEV'
  endif
@@ -34,12 +51,12 @@ index 51813ea..652f0fc 100644
  /**
   * Pure-LLVM texture sampling code generator.
 diff --git src/gallium/frontends/wgl/stw_device.c src/gallium/frontends/wgl/stw_device.c
-index 8ffe752..825d05f 100644
+index 2db745f..b1ab22b 100644
 --- src/gallium/frontends/wgl/stw_device.c
 +++ src/gallium/frontends/wgl/stw_device.c
 @@ -253,7 +253,7 @@ stw_cleanup(void)
- 
-    FREE(stw_dev->smapi);
+    st_screen_destroy(stw_dev->fscreen);
+    FREE(stw_dev->fscreen);
  
 -   stw_dev->screen->destroy(stw_dev->screen);
 +   if (stw_dev->screen) stw_dev->screen->destroy(stw_dev->screen);
