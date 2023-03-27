@@ -1,9 +1,8 @@
 @echo off
 setlocal enabledelayedexpansion
 
-set LLVM_VERSION=16.0.0-rc3
-set LLVM_VERSION2=16.0.0rc3
-set MESA_VERSION=23.0.0
+set LLVM_VERSION=16.0.0
+set MESA_VERSION=23.0.1
 
 set PATH=%CD%\llvm\bin;%CD%\winflexbison;%PATH%
 
@@ -81,14 +80,14 @@ where /Q cl.exe || (
 rem *** download sources ***
 
 echo Downloading llvm
-curl -sfL https://github.com/llvm/llvm-project/releases/download/llvmorg-%LLVM_VERSION%/llvm-%LLVM_VERSION2%.src.tar.xz ^
+curl -sfL https://github.com/llvm/llvm-project/releases/download/llvmorg-%LLVM_VERSION%/llvm-%LLVM_VERSION%.src.tar.xz ^
  | %SZIP% x -bb0 -txz -si -so ^
  | %SZIP% x -bb0 -ttar -si -aoa 1>nul 2>nul
-curl -sfL https://github.com/llvm/llvm-project/releases/download/llvmorg-%LLVM_VERSION%/cmake-%LLVM_VERSION2%.src.tar.xz ^
+curl -sfL https://github.com/llvm/llvm-project/releases/download/llvmorg-%LLVM_VERSION%/cmake-%LLVM_VERSION%.src.tar.xz ^
   | %SZIP% x -bb0 -txz -si -so ^
   | %SZIP% x -bb0 -ttar -si -aoa 1>nul 2>nul
-move llvm-%LLVM_VERSION2%.src llvm.src
-move cmake-%LLVM_VERSION2%.src cmake
+move llvm-%LLVM_VERSION%.src llvm.src
+move cmake-%LLVM_VERSION%.src cmake
 
 echo Downloading mesa
 curl -sfL https://archive.mesa3d.org/mesa-%MESA_VERSION%.tar.xz ^
