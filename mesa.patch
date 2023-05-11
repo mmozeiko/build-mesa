@@ -64,12 +64,15 @@ index 2db745f..b1ab22b 100644
     stw_tls_cleanup();
  
 diff --git src/gallium/targets/libgl-gdi/meson.build src/gallium/targets/libgl-gdi/meson.build
-index 7ddcd8a..8658196 100644
+index 3b310fc..2b2b7ed 100644
 --- src/gallium/targets/libgl-gdi/meson.build
 +++ src/gallium/targets/libgl-gdi/meson.build
-@@ -40,6 +40,7 @@ libopengl32 = shared_library(
+@@ -36,8 +36,9 @@ libopengl32 = shared_library(
+     inc_include, inc_wgl, inc_src,
+   ],
    link_with : [
-     libgallium_wgl, libglapi_bridge, libglapi
+-    libgallium_wgl, libglapi_bridge, libglapi
++    libgallium_wgl, libglapi_bridge, libglapi, libvulkan_util
    ],
 +  link_whole : [ libgallium_wgl ],
    dependencies : [
@@ -91,6 +94,21 @@ index 2999ee5..8b92387 100644
    include_directories : [
      inc_include, inc_src, inc_mapi, inc_mesa, inc_gallium, inc_gallium_aux, inc_wgl, inc_gallium_winsys, inc_gallium_winsys_sw, inc_gallium_drivers,
    ],
+diff --git src/meson.build src/meson.build
+index ebfcf94..ce9855d 100644
+--- src/meson.build
++++ src/meson.build
+@@ -73,9 +73,7 @@ endif
+ if with_platform_wayland
+   subdir('egl/wayland/wayland-drm')
+ endif
+-if with_any_vk or with_gallium_zink
+-  subdir('vulkan')
+-endif
++subdir('vulkan')
+ if with_any_intel
+   subdir('intel')
+ endif
 diff --git src/util/futex.h src/util/futex.h
 index 2a2a00c..5aff5ef 100644
 --- src/util/futex.h
