@@ -2,7 +2,7 @@
 setlocal enabledelayedexpansion
 
 set LLVM_VERSION=16.0.3
-set MESA_VERSION=23.1.0
+set MESA_VERSION=23.1.1
 
 set PATH=%CD%\llvm\bin;%CD%\winflexbison;%PATH%
 
@@ -225,7 +225,6 @@ if "%GITHUB_WORKFLOW%" neq "" (
   pushd archive-lavapipe
   copy /y ..\mesa-llvmpipe\bin\vulkan_lvp.dll .
   python ..\mesa.src\src\vulkan\util\vk_icd_gen.py --api-version 1.1 --xml ..\mesa.src\src\vulkan\registry\vk.xml --lib-path vulkan_lvp.dll --out lvp_icd.x86_64.json
-  copy /y ..\mesa-llvmpipe\share\vulkan\icd.d\lvp_icd.x86_64.json .
 
   %SZIP% a -mx=9 ..\mesa-lavapipe-%MESA_VERSION%.zip 
   popd
