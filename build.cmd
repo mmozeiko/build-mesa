@@ -150,6 +150,10 @@ cmake ^
 ninja -C llvm.build
 ninja -C llvm.build install || exit /b 1
 
+rem *** extra libs ***
+
+set LINK=version.lib
+
 rem *** llvmpipe ***
 
 rd /s /q mesa.build 1>nul 2>nul
