@@ -1,8 +1,8 @@
 @echo off
 setlocal enabledelayedexpansion
 
-set LLVM_VERSION=16.0.6
-set MESA_VERSION=23.1.6
+set LLVM_VERSION=17.0.1
+set MESA_VERSION=23.1.8
 
 set PATH=%CD%\llvm\bin;%CD%\winflexbison;%PATH%
 
@@ -95,6 +95,8 @@ curl -sfL https://archive.mesa3d.org/mesa-%MESA_VERSION%.tar.xz ^
   | %SZIP% x -bb0 -ttar -si -aoa 1>nul 2>nul
 move mesa-%MESA_VERSION% mesa.src
 git apply -p0 --directory=mesa.src mesa.patch || exit /b 1
+curl -sfLO https://gitlab.freedesktop.org/mesa/mesa/-/commit/9ba416cdc6.patch || exit /b 1
+git apply --directory=mesa.src 9ba416cdc6.patch || exit /b 1
 
 echo Downloading win_flex_bison
 if not exist winflexbison (
