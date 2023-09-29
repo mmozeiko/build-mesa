@@ -38,18 +38,18 @@ index 250b528..5e9e617 100644
  if with_amd_vk or with_gallium_radeonsi or with_gallium_r600
    llvm_modules += ['amdgpu', 'bitreader', 'ipo']
 diff --git src/gallium/drivers/llvmpipe/lp_tex_sample.h src/gallium/drivers/llvmpipe/lp_tex_sample.h
-index 51813ea..652f0fc 100644
+index 9e8baa0..e04f98a 100644
 --- src/gallium/drivers/llvmpipe/lp_tex_sample.h
 +++ src/gallium/drivers/llvmpipe/lp_tex_sample.h
-@@ -38,7 +38,7 @@ struct lp_image_static_state;
+@@ -36,7 +36,7 @@ struct lp_sampler_static_state;
  /**
   * Whether texture cache is used for s3tc textures.
   */
 -#define LP_USE_TEXTURE_CACHE 0
 +#define LP_USE_TEXTURE_CACHE 1
  
- /**
-  * Pure-LLVM texture sampling code generator.
+ struct lp_build_sampler_soa *
+ lp_llvm_sampler_soa_create(const struct lp_sampler_static_state *static_state,
 diff --git src/gallium/frontends/wgl/stw_device.c src/gallium/frontends/wgl/stw_device.c
 index 2db745f..b1ab22b 100644
 --- src/gallium/frontends/wgl/stw_device.c
