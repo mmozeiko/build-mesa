@@ -64,11 +64,11 @@ index 2db745f..b1ab22b 100644
     stw_tls_cleanup();
  
 diff --git src/gallium/targets/libgl-gdi/meson.build src/gallium/targets/libgl-gdi/meson.build
-index 3b310fc..2b2b7ed 100644
+index 7e1b87b..92f786a 100644
 --- src/gallium/targets/libgl-gdi/meson.build
 +++ src/gallium/targets/libgl-gdi/meson.build
 @@ -36,8 +36,9 @@ libopengl32 = shared_library(
-     inc_include, inc_wgl, inc_src,
+     inc_include, inc_wgl, inc_src, inc_gallium,
    ],
    link_with : [
 -    libgallium_wgl, libglapi_bridge, libglapi

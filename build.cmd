@@ -1,8 +1,8 @@
 @echo off
 setlocal enabledelayedexpansion
 
-set LLVM_VERSION=17.0.1
-set MESA_VERSION=23.2.1
+set LLVM_VERSION=17.0.6
+set MESA_VERSION=23.3.0
 
 set PATH=%CD%\llvm\bin;%CD%\winflexbison;%PATH%
 
