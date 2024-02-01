@@ -1,8 +1,9 @@
 @echo off
 setlocal enabledelayedexpansion
 
-set LLVM_VERSION=17.0.6
-set MESA_VERSION=23.3.0
+set LLVM_VERSION=18.1.0rc1
+set LLVM2_VERSION=18.1.0-rc1
+set MESA_VERSION=24.0.0
 
 set PATH=%CD%\llvm\bin;%CD%\winflexbison;%PATH%
 
@@ -80,10 +81,10 @@ where /Q cl.exe || (
 rem *** download sources ***
 
 echo Downloading llvm
-curl -sfL https://github.com/llvm/llvm-project/releases/download/llvmorg-%LLVM_VERSION%/llvm-%LLVM_VERSION%.src.tar.xz ^
+curl -sfL https://github.com/llvm/llvm-project/releases/download/llvmorg-%LLVM2_VERSION%/llvm-%LLVM_VERSION%.src.tar.xz ^
  | %SZIP% x -bb0 -txz -si -so ^
  | %SZIP% x -bb0 -ttar -si -aoa 1>nul 2>nul
-curl -sfL https://github.com/llvm/llvm-project/releases/download/llvmorg-%LLVM_VERSION%/cmake-%LLVM_VERSION%.src.tar.xz ^
+curl -sfL https://github.com/llvm/llvm-project/releases/download/llvmorg-%LLVM2_VERSION%/cmake-%LLVM_VERSION%.src.tar.xz ^
   | %SZIP% x -bb0 -txz -si -so ^
   | %SZIP% x -bb0 -ttar -si -aoa 1>nul 2>nul
 move llvm-%LLVM_VERSION%.src llvm.src
@@ -116,6 +117,7 @@ cmake ^
   -B llvm.build ^
   -D CMAKE_INSTALL_PREFIX="%CD%\llvm" ^
   -D CMAKE_BUILD_TYPE="Release" ^
+  -D CMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded ^
   -D BUILD_SHARED_LIBS=OFF ^
   -D LLVM_TARGETS_TO_BUILD="X86" ^
   -D LLVM_ENABLE_BACKTRACES=OFF ^
@@ -145,7 +147,6 @@ cmake ^
   -D LLVM_ENABLE_BINDINGS=OFF ^
   -D LLVM_OPTIMIZED_TABLEGEN=ON ^
   -D LLVM_ENABLE_PLUGINS=OFF ^
-  -D LLVM_USE_CRT_RELEASE=MT ^
   -D LLVM_ENABLE_IDE=OFF || exit /b 1
 ninja -C llvm.build
 ninja -C llvm.build install || exit /b 1
