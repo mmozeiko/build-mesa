@@ -1,8 +1,8 @@
 @echo off
 setlocal enabledelayedexpansion
 
-set LLVM_VERSION=18.1.5
-set MESA_VERSION=24.0.7
+set LLVM_VERSION=18.1.7
+set MESA_VERSION=24.1.2
 
 set PATH=%CD%\llvm\bin;%CD%\winflexbison;%PATH%
 
@@ -94,7 +94,9 @@ curl -sfL https://archive.mesa3d.org/mesa-%MESA_VERSION%.tar.xz ^
   | %SZIP% x -bb0 -txz -si -so ^
   | %SZIP% x -bb0 -ttar -si -aoa 1>nul 2>nul
 move mesa-%MESA_VERSION% mesa.src
+curl -sfLO https://gitlab.freedesktop.org/mesa/mesa/-/merge_requests/29819.patch || exit /b 1
 git apply -p0 --directory=mesa.src mesa.patch || exit /b 1
+git apply -p1 --directory=mesa.src 29819.patch || exit /b 1
 
 echo Downloading win_flex_bison
 if not exist winflexbison (
@@ -192,6 +194,7 @@ ninja -C mesa.build install || exit /b 1
 rem *** zink ***
 
 rd /s /q mesa.build 1>nul 2>nul
+rem includes rebased changes from https://gitlab.freedesktop.org/mesa/mesa/-/merge_requests/29806
 git apply -p0 --directory=mesa.src mesa-zink.patch || exit /b 1
 meson setup ^
   mesa.build ^
