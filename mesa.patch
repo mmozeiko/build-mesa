@@ -106,16 +106,3 @@ index ebfcf94..ce9855d 100644
  if with_any_intel
    subdir('intel')
  endif
-diff --git src/util/futex.h src/util/futex.h
-index 2a2a00c..5aff5ef 100644
---- src/util/futex.h
-+++ src/util/futex.h
-@@ -31,7 +31,7 @@
- #elif defined(__OpenBSD__)
- #define UTIL_FUTEX_SUPPORTED 1
- #elif defined(_WIN32) && !defined(WINDOWS_NO_FUTEX)
--#define UTIL_FUTEX_SUPPORTED 1
-+#define UTIL_FUTEX_SUPPORTED 0
- #else
- #define UTIL_FUTEX_SUPPORTED 0
- #endif

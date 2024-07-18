@@ -9,80 +9,52 @@ on:
 jobs:
   build:
     runs-on: windows-2022
+    strategy:
+      matrix:
+        arch: [x64, arm64]
+
+    outputs:
+      MESA_VERSION: ${{ steps.build.outputs.MESA_VERSION }}
+      LLVM_VERSION: ${{ steps.build.outputs.LLVM_VERSION }}
+
     steps:
 
       - name: checkout
-        uses: actions/checkout@v2          
+        uses: actions/checkout@v4
 
       - name: build
         id: build
         shell: cmd
-        run: call build.cmd
+        run: call build.cmd ${{ matrix.arch }}
+
+      - name: upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: mesa-${{ matrix.arch }}-${{ steps.build.outputs.MESA_VERSION }}
+          path: mesa-*-${{ matrix.arch }}-${{ steps.build.outputs.MESA_VERSION }}.zip
+          if-no-files-found: error
+          compression-level: 0
+
+  release:
+    runs-on: ubuntu-24.04
+    needs: build
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
 
       - name: release
-        id: release
-        if: steps.build.outputs.MESA_VERSION != ''
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ steps.build.outputs.MESA_VERSION }}
-          release_name: ${{ steps.build.outputs.MESA_VERSION }}
-          body: |
-            [mesa ${{ steps.build.outputs.MESA_VERSION }} release notes](https://docs.mesa3d.org/relnotes/${{ steps.build.outputs.MESA_VERSION }}.html)
-            [llvm ${{ steps.build.outputs.LLVM_VERSION }} release notes](https://github.com/llvm/llvm-project/releases/tag/llvmorg-${{ steps.build.outputs.LLVM_VERSION }})
+        run: |
+          echo '[mesa ${{ needs.build.outputs.MESA_VERSION }} release notes](https://docs.mesa3d.org/relnotes/${{ needs.build.outputs.MESA_VERSION }}.html)'                     >>notes.txt
+          echo '[llvm ${{ needs.build.outputs.LLVM_VERSION }} release notes](https://github.com/llvm/llvm-project/releases/tag/llvmorg-${{ needs.build.outputs.LLVM_VERSION }})' >>notes.txt
+          gh release create ${{ needs.build.outputs.MESA_VERSION }} -R "${GITHUB_REPOSITORY}" -t '${{ needs.build.outputs.MESA_VERSION }}' -F notes.txt
 
-      - name: upload llvmpipe
-        id: upload-llvmpipe
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: get artifacts
+        uses: actions/download-artifact@v4
         with:
-          upload_url: ${{ steps.release.outputs.upload_url }}
-          asset_path: "mesa-llvmpipe-${{ steps.build.outputs.MESA_VERSION }}.zip"
-          asset_name: "mesa-llvmpipe-${{ steps.build.outputs.MESA_VERSION }}.zip"
-          asset_content_type: application/zip
+          pattern: mesa-*-${{ needs.build.outputs.MESA_VERSION }}
+          merge-multiple: true
 
-      - name: upload osmesa
-        id: upload-osmesa
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.release.outputs.upload_url }}
-          asset_path: "mesa-osmesa-${{ steps.build.outputs.MESA_VERSION }}.zip"
-          asset_name: "mesa-osmesa-${{ steps.build.outputs.MESA_VERSION }}.zip"
-          asset_content_type: application/zip
-
-      - name: upload lavapipe
-        id: upload-lavapipe
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.release.outputs.upload_url }}
-          asset_path: "mesa-lavapipe-${{ steps.build.outputs.MESA_VERSION }}.zip"
-          asset_name: "mesa-lavapipe-${{ steps.build.outputs.MESA_VERSION }}.zip"
-          asset_content_type: application/zip
-
-      - name: upload d3d12
-        id: upload-d3d12
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.release.outputs.upload_url }}
-          asset_path: "mesa-d3d12-${{ steps.build.outputs.MESA_VERSION }}.zip"
-          asset_name: "mesa-d3d12-${{ steps.build.outputs.MESA_VERSION }}.zip"
-          asset_content_type: application/zip
-
-      - name: upload zink
-        id: upload-zink
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.release.outputs.upload_url }}
-          asset_path: "mesa-zink-${{ steps.build.outputs.MESA_VERSION }}.zip"
-          asset_name: "mesa-zink-${{ steps.build.outputs.MESA_VERSION }}.zip"
-          asset_content_type: application/zip
+      - name: upload artifacts
+        run: gh release upload '${{ needs.build.outputs.MESA_VERSION }}' mesa-*-${{ needs.build.outputs.MESA_VERSION }}.zip -R "${GITHUB_REPOSITORY}"

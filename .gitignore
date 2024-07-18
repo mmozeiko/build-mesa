@@ -1,11 +1,11 @@
-llvm
+llvm-*
 llvm.src
-llvm.build
+llvm.build-*
 mesa-*
 mesa.src
-mesa.build
+mesa.build-*
 archive-*
 winflexbison
+cmake
 *.zip
 *.exe
-
