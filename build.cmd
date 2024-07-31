@@ -2,7 +2,7 @@
 setlocal enabledelayedexpansion
 
 set LLVM_VERSION=18.1.8
-set MESA_VERSION=24.1.4
+set MESA_VERSION=24.1.5
 
 rem *** architectures ***
 
@@ -113,6 +113,8 @@ where /q ninja.exe || (
 
 rem *** download sources ***
 
+if "%SKIP_LLVM%" neq "" goto :no-llvm-download
+
 echo Downloading llvm
 curl -sfL https://github.com/llvm/llvm-project/releases/download/llvmorg-%LLVM_VERSION%/llvm-%LLVM_VERSION%.src.tar.xz ^
   | %SZIP% x -bb0 -txz -si -so ^
@@ -123,6 +125,8 @@ curl -sfL https://github.com/llvm/llvm-project/releases/download/llvmorg-%LLVM_V
 rd /s /q llvm.src 1>nul 2>nul
 move llvm-%LLVM_VERSION%.src llvm.src 1>nul 2>nul
 move cmake-%LLVM_VERSION%.src cmake 1>nul 2>nul
+
+:no-llvm-download
 
 echo Downloading mesa
 curl -sfL https://archive.mesa3d.org/mesa-%MESA_VERSION%.tar.xz ^
@@ -157,6 +161,11 @@ if "!VS!" equ "" (
 )
 
 rem *** llvm ***
+
+if "%SKIP_LLVM%" neq "" (
+  call "!VS!\Common7\Tools\VsDevCmd.bat" -arch=!TARGET_ARCH! -host_arch=!HOST_ARCH! -startdir=none -no_logo || exit /b 1
+  goto :no-llvm-build
+)
 
 if "!TARGET_ARCH!" neq "!HOST_ARCH!" (
 
@@ -246,6 +255,8 @@ cmake ^
   -D LLVM_ENABLE_IDE=OFF || exit /b 1
 ninja -C llvm.build-%MESA_ARCH% llvm-headers llvm-libraries || exit /b 1
 ninja -C llvm.build-%MESA_ARCH% install-llvm-headers install-llvm-libraries 1>nul || exit /b 1
+
+:no-llvm-build
 
 rem *** extra libs ***
 
