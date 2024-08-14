@@ -1,17 +1,17 @@
 diff --git meson.build meson.build
-index 6b22930..4af29b1 100644
+index 9fb4160..6f62a3f 100644
 --- meson.build
 +++ meson.build
-@@ -582,7 +582,7 @@ if with_gallium_kmsro and (with_platform_x11 and not with_dri3)
+@@ -579,7 +579,7 @@ if with_gallium_kmsro and (with_platform_x11 and not with_dri3)
  endif
  
  dep_dxheaders = null_dep
 -if with_gallium_d3d12 or with_microsoft_clc or with_microsoft_vk
-+if true or with_gallium_d3d12 or with_microsoft_clc or with_microsoft_vk
++if true
    dep_dxheaders = dependency('directx-headers', required : false)
    if not dep_dxheaders.found()
      dep_dxheaders = dependency('DirectX-Headers',
-@@ -944,9 +944,6 @@ except:
+@@ -954,9 +954,6 @@ except:
  import mako
  assert Version(mako.__version__) >= Version("0.8.0")
    ''', check: false)
@@ -19,9 +19,9 @@ index 6b22930..4af29b1 100644
 -  error('Python (3.x) mako module >= 0.8.0 required to build mesa.')
 -endif
  
- if cc.get_id() == 'gcc' and cc.version().version_compare('< 4.4.6')
-   error('When using GCC, version 4.4.6 or later is required.')
-@@ -1084,7 +1081,6 @@ if cc.get_argument_syntax() == 'msvc'
+ has_yaml = run_command(
+   prog_python, '-c',
+@@ -1104,7 +1101,6 @@ if cc.get_argument_syntax() == 'msvc'
      '/wd5105',  # macro expansion producing 'defined' has undefined behavior (winbase.h, need Windows SDK upgrade)
      '/we4020',  # Error when passing the wrong number of parameters
      '/we4024',  # Error when passing different type of parameter
@@ -29,7 +29,7 @@ index 6b22930..4af29b1 100644
      '/Zc:__cplusplus', #Set __cplusplus macro to match the /std:c++<version> on the command line
    ]
    c_args += cc.get_supported_arguments(_trial)
-@@ -1519,7 +1515,7 @@ if cc.links('int main() { return 0; }',
+@@ -1539,7 +1535,7 @@ if cc.links('int main() { return 0; }',
              args : '-Wl,--dynamic-list=@0@'.format(
                join_paths(meson.current_source_dir(), 'build-support/conftest.dyn')),
              name : 'dynamic-list')
@@ -38,7 +38,7 @@ index 6b22930..4af29b1 100644
  endif
  
  ld_args_build_id = cc.get_supported_link_arguments('-Wl,--build-id=sha1')
-@@ -1716,7 +1712,7 @@ if dep_libudev.found()
+@@ -1735,7 +1731,7 @@ if dep_libudev.found()
    pre_args += '-DHAVE_LIBUDEV'
  endif
  

@@ -2,7 +2,7 @@
 setlocal enabledelayedexpansion
 
 set LLVM_VERSION=18.1.8
-set MESA_VERSION=24.1.5
+set MESA_VERSION=24.2.0
 
 rem *** architectures ***
 
@@ -72,6 +72,14 @@ python -c "import mako" 2>nul || (
   pip install mako
   python -c "import mako" 2>nul || (
     echo ERROR: "mako" module not found for python
+    exit /b 1
+  )
+)
+
+python -c "import yaml" 2>nul || (
+  pip install pyyaml
+  python -c "import yaml" 2>nul || (
+    echo ERROR: "yaml" module not found for python
     exit /b 1
   )
 )
@@ -262,7 +270,7 @@ rem *** extra libs ***
 
 set LINK=version.lib
 
-rem *** llvmpipe ***
+rem *** llvmpipe, lavapipe, osmesa ***
 
 rd /s /q mesa.build-%MESA_ARCH% 1>nul 2>nul
 meson setup ^
@@ -280,9 +288,9 @@ meson setup ^
   -Dvulkan-drivers=swrast ^
   !MESON_CROSS! || exit /b 1
 ninja -C mesa.build-%MESA_ARCH% install || exit /b 1
-python mesa.src\src\vulkan\util\vk_icd_gen.py --api-version 1.1 --xml mesa.src\src\vulkan\registry\vk.xml --lib-path vulkan_lvp.dll --out mesa-llvmpipe-%MESA_ARCH%\bin\lvp_icd.!TARGET_ARCH_NAME!.json || exit /b 1
+python mesa.src\src\vulkan\util\vk_icd_gen.py --api-version 1.3 --xml mesa.src\src\vulkan\registry\vk.xml --lib-path vulkan_lvp.dll --out mesa-llvmpipe-%MESA_ARCH%\bin\lvp_icd.!TARGET_ARCH_NAME!.json || exit /b 1
 
-rem *** d3d12 & dzn ***
+rem *** d3d12, dzn ***
 
 rd /s /q mesa.build-%MESA_ARCH% 1>nul 2>nul
 meson setup ^
@@ -301,6 +309,11 @@ meson setup ^
   !MESON_CROSS! || exit /b 1
 ninja -C mesa.build-%MESA_ARCH% install || exit /b 1
 python mesa.src\src\vulkan\util\vk_icd_gen.py --api-version 1.1 --xml mesa.src\src\vulkan\registry\vk.xml --lib-path vulkan_dzn.dll --out mesa-d3d12-%MESA_ARCH%\bin\dzn_icd.!TARGET_ARCH_NAME!.json || exit /b 1
+if exist "%ProgramFiles(x86)%\Windows Kits\10\Redist\D3D\%MESA_ARCH%\dxil.dll" (
+  copy /y "%ProgramFiles(x86)%\Windows Kits\10\Redist\D3D\%MESA_ARCH%\dxil.dll" mesa-d3d12-%MESA_ARCH%\bin\
+) else if exist "%WindowsSdkVerBinPath%%MESA_ARCH%\dxil.dll" (
+  copy /y "%WindowsSdkVerBinPath%%MESA_ARCH%\dxil.dll" mesa-d3d12-%MESA_ARCH%\bin\
+)
 
 rem *** zink ***
 
@@ -349,11 +362,7 @@ if "%GITHUB_WORKFLOW%" neq "" (
   mkdir archive-d3d12
   pushd archive-d3d12
   copy /y ..\mesa-d3d12-%MESA_ARCH%\bin\opengl32.dll .
-  if exist "%ProgramFiles(x86)%\Windows Kits\10\Redist\D3D\%MESA_ARCH%\dxil.dll" (
-    copy /y "%ProgramFiles(x86)%\Windows Kits\10\Redist\D3D\%MESA_ARCH%\dxil.dll" .
-  ) else if exist "%WindowsSdkVerBinPath%%MESA_ARCH%\dxil.dll" (
-    copy /y "%WindowsSdkVerBinPath%%MESA_ARCH%\dxil.dll" .
-  )
+  copy /y ..\mesa-d3d12-%MESA_ARCH%\bin\dxil.dll .
   %SZIP% a -mx=9 ..\mesa-d3d12-%MESA_ARCH%-%MESA_VERSION%.zip 
   popd
 
@@ -366,7 +375,7 @@ if "%GITHUB_WORKFLOW%" neq "" (
   mkdir archive-dzn
   pushd archive-dzn
   copy /y ..\mesa-d3d12-%MESA_ARCH%\bin\vulkan_dzn.dll .
-  copy /y ..\archive-d3d12\dxil.dll .
+  copy /y ..\mesa-d3d12-%MESA_ARCH%\bin\dxil.dll .
   copy /y ..\mesa-d3d12-%MESA_ARCH%\bin\dzn_icd.!TARGET_ARCH_NAME!.json .
   %SZIP% a -mx=9 ..\mesa-dzn-%MESA_ARCH%-%MESA_VERSION%.zip
   popd
