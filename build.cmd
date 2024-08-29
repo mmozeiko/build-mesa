@@ -2,7 +2,7 @@
 setlocal enabledelayedexpansion
 
 set LLVM_VERSION=18.1.8
-set MESA_VERSION=24.2.0
+set MESA_VERSION=24.2.1
 
 rem *** architectures ***
 
@@ -151,7 +151,8 @@ if not exist winflexbison (
   echo Downloading win_flex_bison
   mkdir winflexbison
   pushd winflexbison
-  curl -sfL -o win_flex_bison.zip https://github.com/lexxmark/winflexbison/releases/download/v2.5.25/win_flex_bison-2.5.25.zip || exit /b 1
+  rem 2.5.25 is buggy when running parallel make, see: https://github.com/lexxmark/winflexbison/issues/86
+  curl -sfL -o win_flex_bison.zip https://github.com/lexxmark/winflexbison/releases/download/v2.5.24/win_flex_bison-2.5.24.zip || exit /b 1
   %SZIP% x -bb0 -y win_flex_bison.zip 1>nul 2>nul || exit /b 1
   del win_flex_bison.zip 1>nul 2>nul
   popd
