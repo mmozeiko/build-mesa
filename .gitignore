@@ -6,6 +6,5 @@ mesa.src
 mesa.build-*
 archive-*
 winflexbison
-cmake
 *.zip
 *.exe

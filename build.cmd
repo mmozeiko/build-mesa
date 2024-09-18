@@ -1,8 +1,8 @@
 @echo off
 setlocal enabledelayedexpansion
 
-set LLVM_VERSION=18.1.8
-set MESA_VERSION=24.2.2
+set LLVM_VERSION=19.1.0
+set MESA_VERSION=24.2.3
 
 rem *** architectures ***
 
@@ -130,7 +130,7 @@ curl -sfL https://github.com/llvm/llvm-project/releases/download/llvmorg-%LLVM_V
 curl -sfL https://github.com/llvm/llvm-project/releases/download/llvmorg-%LLVM_VERSION%/cmake-%LLVM_VERSION%.src.tar.xz ^
   | %SZIP% x -bb0 -txz -si -so ^
   | %SZIP% x -bb0 -ttar -si -aoa 1>nul 2>nul
-rd /s /q llvm.src 1>nul 2>nul
+rd /s /q cmake llvm.src 1>nul 2>nul
 move llvm-%LLVM_VERSION%.src llvm.src 1>nul 2>nul
 move cmake-%LLVM_VERSION%.src cmake 1>nul 2>nul
 
@@ -269,7 +269,7 @@ ninja -C llvm.build-%MESA_ARCH% install-llvm-headers install-llvm-libraries 1>nu
 
 rem *** extra libs ***
 
-set LINK=version.lib
+set LINK=version.lib ntdll.lib
 
 rem *** llvmpipe, lavapipe, osmesa ***
 
