@@ -21,7 +21,11 @@ if host_machine.cpu_family() == 'aarch64'
   deps += ['LLVMAArch64AsmParser', 'LLVMAArch64CodeGen', 'LLVMAArch64Desc',
            'LLVMAArch64Disassembler', 'LLVMAArch64Info', 'LLVMAArch64Utils']
 else
-  folder = '../../../llvm-x64'
+  if host_machine.cpu_family() == 'x86_64'
+    folder = '../../../llvm-x64'
+  else
+    folder = '../../../llvm-x86'
+  endif
   deps += ['LLVMX86AsmParser', 'LLVMX86CodeGen', 'LLVMX86Desc', 'LLVMX86Disassembler',
            'LLVMX86Info', 'LLVMX86TargetMCA']
 endif
@@ -35,5 +39,5 @@ endforeach
 dep_llvm = declare_dependency(
   include_directories : include_directories(folder + '/include'),
   dependencies : _deps,
-  version : '19.1.0',
+  version : '19.1.2',
 )

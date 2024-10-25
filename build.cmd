@@ -6,23 +6,35 @@ set MESA_VERSION=24.2.5
 
 rem *** architectures ***
 
-if "%1" equ "x64" (
+if "%1" equ "x86" (
+  set MESA_ARCH=x86
+) else if "%1" equ "x64" (
   set MESA_ARCH=x64
 ) else if "%1" equ "arm64" (
   set MESA_ARCH=arm64
+) else if "%1" equ "x86" (
+  set MESA_ARCH=x86
 ) else if "%1" neq "" (
   echo Unknown "%1" architecture!
   exit /b 1
+) else if "%PROCESSOR_ARCHITECTURE%" equ "x86" (
+  set MESA_ARCH=x86
 ) else if "%PROCESSOR_ARCHITECTURE%" equ "AMD64" (
   set MESA_ARCH=x64
 ) else if "%PROCESSOR_ARCHITECTURE%" equ "ARM64" (
   set MESA_ARCH=arm64
+) else if "%PROCESSOR_ARCHITECTURE%" equ "x86" (
+  set MESA_ARCH=x86
 ) else (
   echo Unknown host architecture!
   exit /b 1
 )
 
-if "%MESA_ARCH%" equ "x64" (
+if "%MESA_ARCH%" equ "x86" (
+  set TARGET_ARCH=x86
+  set LLVM_TARGETS_TO_BUILD=X86
+  set TARGET_ARCH_NAME=i686
+) else if "%MESA_ARCH%" equ "x64" (
   set TARGET_ARCH=amd64
   set LLVM_TARGETS_TO_BUILD=X86
   set TARGET_ARCH_NAME=x86_64
@@ -30,12 +42,20 @@ if "%MESA_ARCH%" equ "x64" (
   set TARGET_ARCH=arm64
   set LLVM_TARGETS_TO_BUILD=AArch64
   set TARGET_ARCH_NAME=aarch64
+) else if "%MESA_ARCH%" equ "x86" (
+  set TARGET_ARCH=x86
+  set LLVM_TARGETS_TO_BUILD=X86
+  set TARGET_ARCH_NAME=x86
 )
 
-if "%PROCESSOR_ARCHITECTURE%" equ "AMD64" (
+if "%PROCESSOR_ARCHITECTURE%" equ "x86" (
+  set HOST_ARCH=x86
+) else if "%PROCESSOR_ARCHITECTURE%" equ "AMD64" (
   set HOST_ARCH=amd64
 ) else if "%PROCESSOR_ARCHITECTURE%" equ "ARM64" (
   set HOST_ARCH=arm64
+) else if "%PROCESSOR_ARCHITECTURE%" equ "x86" (
+  set HOST_ARCH=x86
 )
 
 if "!TARGET_ARCH!" neq "!HOST_ARCH!" (
@@ -44,6 +64,13 @@ if "!TARGET_ARCH!" neq "!HOST_ARCH!" (
 ) else if "%MESA_ARCH%" equ "arm64" (
   set LLVM_CROSS_CMAKE_FLAGS=
   set MESON_CROSS=
+) else if "%MESA_ARCH%" equ "x86" (
+  set LLVM_CROSS_CMAKE_FLAGS=
+  set MESON_CROSS=
+)
+
+if "%MESA_ARCH%" equ "x86" (
+  set MESON_CROSS=%MESON_CROSS% -Dmin-windows-version=7
 )
 
 set PATH=%CD%\llvm-%MESA_ARCH%\bin;%CD%\winflexbison;%PATH%
@@ -110,10 +137,14 @@ where /q cmake.exe || (
 )
 
 where /q ninja.exe || (
-  if "%PROCESSOR_ARCHITECTURE%" equ "AMD64" (
+  if "%PROCESSOR_ARCHITECTURE%" equ "x86" (
+    curl -LOsf https://github.com/ninja-build/ninja/releases/download/v1.12.1/ninja-win.zip || exit /b 1
+  ) else if "%PROCESSOR_ARCHITECTURE%" equ "AMD64" (
     curl -LOsf https://github.com/ninja-build/ninja/releases/download/v1.12.1/ninja-win.zip || exit /b 1
   ) else if "%PROCESSOR_ARCHITECTURE%" equ "ARM64" (
     curl -Lsf -o ninja-win.zip https://github.com/ninja-build/ninja/releases/download/v1.12.1/ninja-winarm64.zip || exit /b 1
+  ) else if "%PROCESSOR_ARCHITECTURE%" equ "x86" (
+    curl -LOsf https://github.com/ninja-build/ninja/releases/download/v1.12.1/ninja-win.zip || exit /b 1
   )
   %SZIP% x -bb0 -y ninja-win.zip 1>nul 2>nul || exit /b 1
   del ninja-win.zip 1>nul 2>nul
