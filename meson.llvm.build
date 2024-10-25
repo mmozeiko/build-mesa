@@ -20,6 +20,10 @@ if host_machine.cpu_family() == 'aarch64'
   folder = '../../../llvm-arm64'
   deps += ['LLVMAArch64AsmParser', 'LLVMAArch64CodeGen', 'LLVMAArch64Desc',
            'LLVMAArch64Disassembler', 'LLVMAArch64Info', 'LLVMAArch64Utils']
+elif host_machine.cpu_family() == 'x86'
+  folder = '../../../llvm-x86'
+  deps += ['LLVMX86AsmParser', 'LLVMX86CodeGen', 'LLVMX86Desc', 'LLVMX86Disassembler',
+           'LLVMX86Info', 'LLVMX86TargetMCA']
 else
   folder = '../../../llvm-x64'
   deps += ['LLVMX86AsmParser', 'LLVMX86CodeGen', 'LLVMX86Desc', 'LLVMX86Disassembler',
