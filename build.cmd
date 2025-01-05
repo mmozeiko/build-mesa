@@ -2,7 +2,7 @@
 setlocal enabledelayedexpansion
 
 set LLVM_VERSION=19.1.6
-set MESA_VERSION=24.3.2
+set MESA_VERSION=24.3.3
 
 rem *** architectures ***
 
