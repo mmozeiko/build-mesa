@@ -1,8 +1,8 @@
 @echo off
 setlocal enabledelayedexpansion
 
-set LLVM_VERSION=19.1.7
-set MESA_VERSION=24.3.4
+set LLVM_VERSION=20.1.0-rc2
+set MESA_VERSION=25.0.0
 
 rem *** architectures ***
 
@@ -222,7 +222,6 @@ if "!TARGET_ARCH!" neq "!HOST_ARCH!" (
     -D LLVM_ENABLE_BACKTRACES=OFF ^
     -D LLVM_ENABLE_UNWIND_TABLES=OFF ^
     -D LLVM_ENABLE_CRASH_OVERRIDES=OFF ^
-    -D LLVM_ENABLE_TERMINFO=OFF ^
     -D LLVM_ENABLE_LIBXML2=OFF ^
     -D LLVM_ENABLE_LIBEDIT=OFF ^
     -D LLVM_ENABLE_LIBPFM=OFF ^
@@ -268,7 +267,6 @@ cmake ^
   -D LLVM_ENABLE_BACKTRACES=OFF ^
   -D LLVM_ENABLE_UNWIND_TABLES=OFF ^
   -D LLVM_ENABLE_CRASH_OVERRIDES=OFF ^
-  -D LLVM_ENABLE_TERMINFO=OFF ^
   -D LLVM_ENABLE_LIBXML2=OFF ^
   -D LLVM_ENABLE_LIBEDIT=OFF ^
   -D LLVM_ENABLE_LIBPFM=OFF ^
@@ -320,7 +318,7 @@ meson setup ^
   -Dvulkan-drivers=swrast ^
   !MESON_CROSS! || exit /b 1
 ninja -C mesa.build-%MESA_ARCH% install || exit /b 1
-python mesa.src\src\vulkan\util\vk_icd_gen.py --api-version 1.3 --xml mesa.src\src\vulkan\registry\vk.xml --lib-path vulkan_lvp.dll --out mesa-llvmpipe-%MESA_ARCH%\bin\lvp_icd.!TARGET_ARCH_NAME!.json || exit /b 1
+python mesa.src\src\vulkan\util\vk_icd_gen.py --api-version 1.4 --xml mesa.src\src\vulkan\registry\vk.xml --lib-path vulkan_lvp.dll --out mesa-llvmpipe-%MESA_ARCH%\bin\lvp_icd.!TARGET_ARCH_NAME!.json || exit /b 1
 
 rem *** d3d12, dzn ***
 

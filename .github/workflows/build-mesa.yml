@@ -21,10 +21,18 @@ jobs:
       - name: checkout
         uses: actions/checkout@v4
 
+      - name: install vulkan sdk
+        shell: cmd
+        run: |
+          curl -fL -o vulkan-sdk.exe https://sdk.lunarg.com/sdk/download/1.4.304.1/windows/VulkanSDK-1.4.304.1-Installer.exe || exit /b 1
+          vulkan-sdk.exe --root %cd%\vulkan --accept-licenses --default-answer --confirm-command install com.lunarg.vulkan || exit /b 1
+
       - name: build
         id: build
         shell: cmd
-        run: call build.cmd ${{ matrix.arch }}
+        run: |
+          set PATH=%cd%\vulkan\bin;%PATH%
+          call build.cmd ${{ matrix.arch }}
 
       - name: upload artifacts
         uses: actions/upload-artifact@v4

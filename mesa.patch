@@ -1,17 +1,17 @@
 diff --git meson.build meson.build
-index 9fb4160..6f62a3f 100644
+index 597a32e..5fd5a25 100644
 --- meson.build
 +++ meson.build
-@@ -579,7 +579,7 @@ if with_gallium_kmsro and (with_platform_x11 and not with_dri3)
+@@ -598,7 +598,7 @@ if with_dri
  endif
  
  dep_dxheaders = null_dep
--if with_gallium_d3d12 or with_microsoft_clc or with_microsoft_vk
+-if with_gallium_d3d12 or with_microsoft_clc or with_microsoft_vk or with_gfxstream_vk and host_machine.system() == 'windows'
 +if true
    dep_dxheaders = dependency('directx-headers', required : false)
    if not dep_dxheaders.found()
      dep_dxheaders = dependency('DirectX-Headers',
-@@ -954,9 +954,6 @@ except:
+@@ -946,9 +946,6 @@ except:
  import mako
  assert Version(mako.__version__) >= Version("0.8.0")
    ''', check: false)
@@ -21,7 +21,7 @@ index 9fb4160..6f62a3f 100644
  
  has_yaml = run_command(
    prog_python, '-c',
-@@ -1104,7 +1101,6 @@ if cc.get_argument_syntax() == 'msvc'
+@@ -1096,7 +1093,6 @@ if cc.get_argument_syntax() == 'msvc'
      '/wd5105',  # macro expansion producing 'defined' has undefined behavior (winbase.h, need Windows SDK upgrade)
      '/we4020',  # Error when passing the wrong number of parameters
      '/we4024',  # Error when passing different type of parameter
@@ -29,24 +29,6 @@ index 9fb4160..6f62a3f 100644
      '/Zc:__cplusplus', #Set __cplusplus macro to match the /std:c++<version> on the command line
    ]
    c_args += cc.get_supported_arguments(_trial)
-@@ -1539,7 +1535,7 @@ if cc.links('int main() { return 0; }',
-             args : '-Wl,--dynamic-list=@0@'.format(
-               join_paths(meson.current_source_dir(), 'build-support/conftest.dyn')),
-             name : 'dynamic-list')
--  with_ld_dynamic_list = true
-+  with_ld_dynamic_list = false
- endif
- 
- ld_args_build_id = cc.get_supported_link_arguments('-Wl,--build-id=sha1')
-@@ -1735,7 +1731,7 @@ if dep_libudev.found()
-   pre_args += '-DHAVE_LIBUDEV'
- endif
- 
--llvm_modules = ['bitwriter', 'engine', 'mcdisassembler', 'mcjit', 'core', 'executionengine', 'scalaropts', 'transformutils', 'instcombine']
-+llvm_modules = ['bitwriter', 'engine', 'mcdisassembler', 'mcjit', 'core', 'executionengine', 'scalaropts', 'transformutils', 'instcombine', 'passes']
- llvm_optional_modules = ['coroutines']
- if with_amd_vk or with_gallium_radeonsi or with_gallium_r600
-   llvm_modules += ['amdgpu', 'bitreader', 'ipo']
 diff --git src/gallium/drivers/llvmpipe/lp_tex_sample.h src/gallium/drivers/llvmpipe/lp_tex_sample.h
 index 9e8baa0..e04f98a 100644
 --- src/gallium/drivers/llvmpipe/lp_tex_sample.h
