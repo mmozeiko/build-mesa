@@ -1,8 +1,8 @@
 @echo off
 setlocal enabledelayedexpansion
 
-set LLVM_VERSION=20.1.1
-set MESA_VERSION=25.0.2
+set LLVM_VERSION=20.1.2
+set MESA_VERSION=25.0.3
 
 rem *** architectures ***
 
