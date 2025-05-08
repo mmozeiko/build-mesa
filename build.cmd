@@ -2,7 +2,7 @@
 setlocal enabledelayedexpansion
 
 set LLVM_VERSION=20.1.4
-set MESA_VERSION=25.0.5
+set MESA_VERSION=25.1.0
 
 rem *** architectures ***
 
@@ -300,7 +300,7 @@ rem *** extra libs ***
 
 set LINK=version.lib ntdll.lib
 
-rem *** llvmpipe, lavapipe, osmesa ***
+rem *** llvmpipe, lavapipe ***
 
 rd /s /q mesa.build-%MESA_ARCH% 1>nul 2>nul
 meson setup ^
@@ -313,9 +313,12 @@ meson setup ^
   -Db_vscrt=mt ^
   -Dllvm=enabled ^
   -Dplatforms=windows ^
-  -Dosmesa=true ^
-  -Dgallium-drivers=swrast ^
+  -Dvideo-codecs= ^
+  -Dgallium-drivers=llvmpipe ^
   -Dvulkan-drivers=swrast ^
+  -Degl=disabled ^
+  -Dgles1=disabled ^
+  -Dgles2=disabled ^
   !MESON_CROSS! || exit /b 1
 ninja -C mesa.build-%MESA_ARCH% install || exit /b 1
 python mesa.src\src\vulkan\util\vk_icd_gen.py --api-version 1.4 --xml mesa.src\src\vulkan\registry\vk.xml --lib-path vulkan_lvp.dll --out mesa-llvmpipe-%MESA_ARCH%\bin\lvp_icd.!TARGET_ARCH_NAME!.json || exit /b 1
@@ -333,9 +336,12 @@ meson setup ^
   -Db_vscrt=mt ^
   -Dllvm=disabled ^
   -Dplatforms=windows ^
-  -Dosmesa=false ^
+  -Dvideo-codecs=all ^
   -Dgallium-drivers=d3d12 ^
   -Dvulkan-drivers=microsoft-experimental ^
+  -Degl=disabled ^
+  -Dgles1=disabled ^
+  -Dgles2=disabled ^
   !MESON_CROSS! || exit /b 1
 ninja -C mesa.build-%MESA_ARCH% install || exit /b 1
 python mesa.src\src\vulkan\util\vk_icd_gen.py --api-version 1.1 --xml mesa.src\src\vulkan\registry\vk.xml --lib-path vulkan_dzn.dll --out mesa-d3d12-%MESA_ARCH%\bin\dzn_icd.!TARGET_ARCH_NAME!.json || exit /b 1
@@ -359,8 +365,11 @@ meson setup ^
   -Db_vscrt=mt ^
   -Dllvm=disabled ^
   -Dplatforms=windows ^
-  -Dosmesa=false ^
+  -Dvideo-codecs= ^
   -Dgallium-drivers=zink ^
+  -Degl=disabled ^
+  -Dgles1=disabled ^
+  -Dgles2=disabled ^
   !MESON_CROSS! || exit /b 1
 ninja -C mesa.build-%MESA_ARCH% install || exit /b 1
 
@@ -372,14 +381,6 @@ if "%GITHUB_WORKFLOW%" neq "" (
   pushd archive-llvmpipe
   copy /y ..\mesa-llvmpipe-%MESA_ARCH%\bin\opengl32.dll .
   %SZIP% a -mx=9 ..\mesa-llvmpipe-%MESA_ARCH%-%MESA_VERSION%.zip 
-  popd
-
-  mkdir archive-osmesa
-  pushd archive-osmesa
-  copy /y ..\mesa-llvmpipe-%MESA_ARCH%\bin\osmesa.dll      .
-  copy /y ..\mesa-llvmpipe-%MESA_ARCH%\lib\osmesa.lib      .
-  copy /y ..\mesa-llvmpipe-%MESA_ARCH%\include\GL\osmesa.h .
-  %SZIP% a -mx=9 ..\mesa-osmesa-%MESA_ARCH%-%MESA_VERSION%.zip 
   popd
 
   mkdir archive-lavapipe

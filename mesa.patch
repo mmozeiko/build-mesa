@@ -1,8 +1,8 @@
 diff --git meson.build meson.build
-index 597a32e..5fd5a25 100644
+index 58194e7..7097347 100644
 --- meson.build
 +++ meson.build
-@@ -598,7 +598,7 @@ if with_dri
+@@ -586,7 +586,7 @@ if with_dri
  endif
  
  dep_dxheaders = null_dep
@@ -11,7 +11,7 @@ index 597a32e..5fd5a25 100644
    dep_dxheaders = dependency('directx-headers', required : false)
    if not dep_dxheaders.found()
      dep_dxheaders = dependency('DirectX-Headers',
-@@ -946,9 +946,6 @@ except:
+@@ -933,9 +933,6 @@ except:
  import mako
  assert Version(mako.__version__) >= Version("0.8.0")
    ''', check: false)
@@ -21,14 +21,14 @@ index 597a32e..5fd5a25 100644
  
  has_yaml = run_command(
    prog_python, '-c',
-@@ -1096,7 +1093,6 @@ if cc.get_argument_syntax() == 'msvc'
+@@ -1083,7 +1080,6 @@ if cc.get_argument_syntax() == 'msvc'
      '/wd5105',  # macro expansion producing 'defined' has undefined behavior (winbase.h, need Windows SDK upgrade)
      '/we4020',  # Error when passing the wrong number of parameters
      '/we4024',  # Error when passing different type of parameter
 -    '/we4189',  # 'identifier' : local variable is initialized but not referenced
      '/Zc:__cplusplus', #Set __cplusplus macro to match the /std:c++<version> on the command line
+     '/Zc:preprocessor', # Use the standards-conforming preprocessor
    ]
-   c_args += cc.get_supported_arguments(_trial)
 diff --git src/gallium/drivers/llvmpipe/lp_tex_sample.h src/gallium/drivers/llvmpipe/lp_tex_sample.h
 index 9e8baa0..e04f98a 100644
 --- src/gallium/drivers/llvmpipe/lp_tex_sample.h
@@ -43,15 +43,15 @@ index 9e8baa0..e04f98a 100644
  struct lp_build_sampler_soa *
  lp_llvm_sampler_soa_create(const struct lp_sampler_static_state *static_state,
 diff --git src/gallium/targets/libgl-gdi/meson.build src/gallium/targets/libgl-gdi/meson.build
-index 7e1b87b..92f786a 100644
+index 8e995b5..315e748 100644
 --- src/gallium/targets/libgl-gdi/meson.build
 +++ src/gallium/targets/libgl-gdi/meson.build
-@@ -36,8 +36,9 @@ libopengl32 = shared_library(
+@@ -18,8 +18,9 @@ libopengl32 = shared_library(
      inc_include, inc_wgl, inc_src, inc_gallium,
    ],
    link_with : [
--    libgallium_wgl, libglapi_bridge, libglapi
-+    libgallium_wgl, libglapi_bridge, libglapi, libvulkan_util
+-    libgallium_wgl, libglapi_bridge
++    libgallium_wgl, libglapi_bridge, libvulkan_util
    ],
 +  link_whole : [ libgallium_wgl ],
    dependencies : [
