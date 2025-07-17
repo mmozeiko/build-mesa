@@ -90,5 +90,5 @@ endforeach
 dep_llvm = declare_dependency(
   include_directories : include_directories(folder + '/include'),
   dependencies : _deps,
-  version : '20.1.7',
+  version : '20.1.8',
 )
