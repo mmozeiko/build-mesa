@@ -24,7 +24,7 @@ jobs:
       - name: install vulkan sdk
         shell: cmd
         run: |
-          curl -fL -o vulkan-sdk.exe https://sdk.lunarg.com/sdk/download/1.4.304.1/windows/VulkanSDK-1.4.304.1-Installer.exe || exit /b 1
+          curl -fL -o vulkan-sdk.exe https://sdk.lunarg.com/sdk/download/1.4.321.1/windows/vulkansdk-windows-X64-1.4.321.1.exe || exit /b 1
           vulkan-sdk.exe --root %cd%\vulkan --accept-licenses --default-answer --confirm-command install com.lunarg.vulkan || exit /b 1
 
       - name: build
