@@ -74,11 +74,11 @@ index 2999ee5..8b92387 100644
      inc_include, inc_src, inc_mapi, inc_mesa, inc_gallium, inc_gallium_aux, inc_wgl, inc_gallium_winsys, inc_gallium_winsys_sw, inc_gallium_drivers,
    ],
 diff --git src/meson.build src/meson.build
-index ebfcf94..ce9855d 100644
+index 70bf495..f234ee2 100644
 --- src/meson.build
 +++ src/meson.build
-@@ -73,9 +73,7 @@ endif
- if with_platform_wayland
+@@ -66,9 +66,7 @@ endif
+ if with_wayland_bind_display
    subdir('egl/wayland/wayland-drm')
  endif
 -if with_any_vk or with_gallium_zink
@@ -88,3 +88,15 @@ index ebfcf94..ce9855d 100644
  if with_any_intel
    subdir('intel')
  endif
+diff --git src/compiler/nir/nir_lower_io_indirect_loads.c src/compiler/nir/nir_lower_io_indirect_loads.c
+index 90ebcf0..f57fe9a 100644
+--- src/compiler/nir/nir_lower_io_indirect_loads.c
++++ src/compiler/nir/nir_lower_io_indirect_loads.c
+@@ -23,6 +23,7 @@
+ 
+ #include "nir.h"
+ #include "nir_builder.h"
++#include "c99_alloca.h"
+ 
+ typedef struct {
+    nir_variable *var[INTERP_MODE_COUNT];
