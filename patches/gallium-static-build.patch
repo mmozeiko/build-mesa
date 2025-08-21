@@ -1,0 +1,103 @@
+diff --git a/src/gallium/targets/libgl-gdi/meson.build b/src/gallium/targets/libgl-gdi/meson.build
+index 8e995b5..315e748 100644
+--- a/src/gallium/targets/libgl-gdi/meson.build
++++ b/src/gallium/targets/libgl-gdi/meson.build
+@@ -18,8 +18,9 @@ libopengl32 = shared_library(
+     inc_include, inc_wgl, inc_src, inc_gallium,
+   ],
+   link_with : [
+-    libgallium_wgl, libglapi_bridge
++    libgallium_wgl, libglapi_bridge, libvulkan_util
+   ],
++  link_whole : [ libgallium_wgl ],
+   dependencies : [
+     idep_mesautil
+   ],
+diff --git a/src/gallium/targets/wgl/meson.build b/src/gallium/targets/wgl/meson.build
+index 2999ee5..8b92387 100644
+--- a/src/gallium/targets/wgl/meson.build
++++ b/src/gallium/targets/wgl/meson.build
+@@ -29,10 +29,9 @@ wgl_def = custom_target(
+ )
+ 
+ gallium_wgl_name = get_option('gallium-wgl-dll-name')
+-libgallium_wgl = shared_library(
++libgallium_wgl = static_library(
+   gallium_wgl_name,
+   ['wgl.c'],
+-  vs_module_defs : wgl_def,
+   include_directories : [
+     inc_include, inc_src, inc_mapi, inc_mesa, inc_gallium, inc_gallium_aux, inc_wgl, inc_gallium_winsys, inc_gallium_winsys_sw, inc_gallium_drivers,
+   ],
+diff --git a/src/egl/meson.build b/src/egl/meson.build
+index 66bb48d..c6e0436 100644
+--- a/src/egl/meson.build
++++ b/src/egl/meson.build
+@@ -212,6 +212,7 @@ libegl = shared_library(
+   link_with : [link_for_egl],
+   link_args : [ld_args_bsymbolic, ld_args_gc_sections, link_args_for_egl],
+   link_depends : [link_deps_for_egl],
++  link_whole : [libgallium_wgl],
+   dependencies : [deps_for_egl, dep_dl, dep_libdrm, dep_clock, dep_thread, idep_mesautil],
+   install : true,
+   version : egl_lib_version,
+diff --git a/src/egl/main/egl.def.in b/src/egl/main/egl.def.in
+index 1e6cf18..94d2ecd 100644
+--- a/src/egl/main/egl.def.in
++++ b/src/egl/main/egl.def.in
+@@ -48,3 +48,5 @@ eglWaitSync@12
+ MesaGLInteropEGLQueryDeviceInfo
+ MesaGLInteropEGLExportObject
+ MesaGLInteropEGLFlushObjects
++
++_mesa_glapi_get_dispatch
+diff --git a/src/mapi/es1api/meson.build b/src/mapi/es1api/meson.build
+index 6757645..87badbe 100644
+--- a/src/mapi/es1api/meson.build
++++ b/src/mapi/es1api/meson.build
+@@ -34,7 +34,7 @@ libglesv1_cm = shared_library(
+   gnu_symbol_visibility : 'hidden',
+   link_args : [ld_args_gc_sections],
+   include_directories : [inc_src, inc_include, inc_mapi],
+-  link_with : shared_glapi_lib,
++  link_with : libegl,
+   dependencies : [dep_thread, dep_libdrm, dep_m, dep_dl, idep_mesautilc11],
+   soversion : host_machine.system() == 'windows' ? '' : '1',
+   version : '1.1.0',
+diff --git a/src/mapi/es2api/meson.build.org b/src/mapi/es2api/meson.build
+index 8202e03..04c37d7 100644
+--- a/src/mapi/es2api/meson.build
++++ b/src/mapi/es2api/meson.build
+@@ -34,7 +34,7 @@ libgles2 = shared_library(
+   gnu_symbol_visibility : 'hidden',
+   link_args : [ld_args_gc_sections],
+   include_directories : [inc_src, inc_include, inc_mapi],
+-  link_with : shared_glapi_lib,
++  link_with : libegl,
+   dependencies : [dep_thread, dep_libdrm, dep_m, dep_dl, idep_mesautilc11],
+   soversion : host_machine.system() == 'windows' ? '' : '2',
+   version : '2.0.0',
+diff --git a/src/meson.build b/src/meson.build
+index 70bf495..8f6aaac 100644
+--- a/src/meson.build
++++ b/src/meson.build
+@@ -121,6 +121,9 @@ endif
+ if with_gallium_or_lvp
+   subdir('gallium')
+ endif
++if with_egl
++  subdir('egl')
++endif
+ # These require libgallium (shared_glapi_lib)
+ if with_gallium and (with_glx != 'disabled' or with_egl)
+   if with_gles1 and not with_glvnd
+@@ -148,9 +151,6 @@ else
+   dep_gbm = null_dep
+ endif
+ 
+-if with_egl
+-  subdir('egl')
+-endif
+ if with_gallium and with_gbm
+   if with_glx == 'dri' or with_platform_x11 or with_platform_xcb
+     subdir('gallium/targets/dril')

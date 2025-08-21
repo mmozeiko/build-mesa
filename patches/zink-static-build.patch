@@ -1,7 +1,7 @@
-diff --git src/vulkan/util/meson.build src/vulkan/util/meson.build
+diff --git a/src/vulkan/util/meson.build b/src/vulkan/util/meson.build
 index 90ebfd6..9a6063d 100644
---- src/vulkan/util/meson.build
-+++ src/vulkan/util/meson.build
+--- a/src/vulkan/util/meson.build
++++ b/src/vulkan/util/meson.build
 @@ -120,7 +120,7 @@ vk_extensions = custom_target(
  
  libvulkan_util = static_library(

@@ -1,0 +1,13 @@
+diff --git a/src/gallium/drivers/llvmpipe/lp_tex_sample.h b/src/gallium/drivers/llvmpipe/lp_tex_sample.h
+index 9e8baa0..e04f98a 100644
+--- a/src/gallium/drivers/llvmpipe/lp_tex_sample.h
++++ b/src/gallium/drivers/llvmpipe/lp_tex_sample.h
+@@ -36,7 +36,7 @@ struct lp_sampler_static_state;
+ /**
+  * Whether texture cache is used for s3tc textures.
+  */
+-#define LP_USE_TEXTURE_CACHE 0
++#define LP_USE_TEXTURE_CACHE 1
+ 
+ struct lp_build_sampler_soa *
+ lp_llvm_sampler_soa_create(const struct lp_sampler_static_state *static_state,

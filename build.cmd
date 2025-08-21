@@ -1,8 +1,14 @@
 @echo off
 setlocal enabledelayedexpansion
 
+set MESA_VERSION=25.2.1
 set LLVM_VERSION=20.1.8
-set MESA_VERSION=25.2.0
+set LLVM_RELEASE=https://discourse.llvm.org/t/llvm-20-1-8-released/87259
+
+>nul find "'%LLVM_VERSION%'" meson\meson.llvm.build || (
+  echo llvm version in meson.llvm.build does not match expected %LLVM_VERSION% value^!
+  exit /b 1
+)
 
 rem *** architectures ***
 
@@ -15,7 +21,7 @@ if "%1" equ "x86" (
 ) else if "%1" equ "x86" (
   set MESA_ARCH=x86
 ) else if "%1" neq "" (
-  echo Unknown "%1" architecture!
+  echo Unknown "%1" architecture^!
   exit /b 1
 ) else if "%PROCESSOR_ARCHITECTURE%" equ "x86" (
   set MESA_ARCH=x86
@@ -26,7 +32,7 @@ if "%1" equ "x86" (
 ) else if "%PROCESSOR_ARCHITECTURE%" equ "x86" (
   set MESA_ARCH=x86
 ) else (
-  echo Unknown host architecture!
+  echo Unknown host architecture^!
   exit /b 1
 )
 
@@ -60,7 +66,7 @@ if "%PROCESSOR_ARCHITECTURE%" equ "x86" (
 
 if "!TARGET_ARCH!" neq "!HOST_ARCH!" (
   set LLVM_CROSS_CMAKE_FLAGS=-D CMAKE_SYSTEM_NAME=Windows -D LLVM_NATIVE_TOOL_DIR="%CD%\llvm.build-native\bin"
-  set MESON_CROSS=--cross-file "%CD%\meson-%MESA_ARCH%.txt"
+  set MESON_CROSS=--cross-file "%CD%\meson\meson-%MESA_ARCH%.txt"
 ) else if "%MESA_ARCH%" equ "arm64" (
   set LLVM_CROSS_CMAKE_FLAGS=
   set MESON_CROSS=
@@ -77,6 +83,21 @@ set PATH=%CD%\llvm-%MESA_ARCH%\bin;%CD%\winflexbison;%PATH%
 
 rem *** check dependencies ***
 
+where /q git.exe || (
+  echo ERROR: "git.exe" not found
+  exit /b 1
+)
+
+where /q curl.exe || (
+  echo ERROR: "curl.exe" not found
+  exit /b 1
+)
+
+where /q cmake.exe || (
+  echo ERROR: "cmake.exe" not found
+  exit /b 1
+)
+
 where /q python.exe || (
   echo ERROR: "python.exe" not found
   exit /b 1
@@ -88,37 +109,19 @@ where /q pip.exe || (
 )
 
 where /q meson.exe || (
-  pip install meson
-  where /q meson.exe || (
-    echo ERROR: "meson.exe" not found
-    exit /b 1
-  )
+  pip install meson || exit /b 1
+)
+
+python -c "import packaging" 2>nul || (
+  pip install packaging || exit /b 1
 )
 
 python -c "import mako" 2>nul || (
-  pip install mako
-  python -c "import mako" 2>nul || (
-    echo ERROR: "mako" module not found for python
-    exit /b 1
-  )
+  pip install mako || exit /b 1
 )
 
 python -c "import yaml" 2>nul || (
-  pip install pyyaml
-  python -c "import yaml" 2>nul || (
-    echo ERROR: "yaml" module not found for python
-    exit /b 1
-  )
-)
-
-where /q git.exe || (
-  echo ERROR: "git.exe" not found
-  exit /b 1
-)
-
-where /q curl.exe || (
-  echo ERROR: "curl.exe" not found
-  exit /b 1
+  pip install pyyaml || exit /b 1
 )
 
 if exist "%ProgramFiles%\7-Zip\7z.exe" (
@@ -131,26 +134,29 @@ if exist "%ProgramFiles%\7-Zip\7z.exe" (
   set SZIP=7za.exe
 )
 
-where /q cmake.exe || (
-  echo ERROR: "cmake.exe" not found
-  exit /b 1
-)
-
 where /q ninja.exe || (
   if "%PROCESSOR_ARCHITECTURE%" equ "x86" (
-    curl -LOsf https://github.com/ninja-build/ninja/releases/download/v1.12.1/ninja-win.zip || exit /b 1
+    echo Sorry, ninja binaries are not available on 32-bit windows anymore
+    exit /b 1
   ) else if "%PROCESSOR_ARCHITECTURE%" equ "AMD64" (
-    curl -LOsf https://github.com/ninja-build/ninja/releases/download/v1.12.1/ninja-win.zip || exit /b 1
+    curl -LOsf https://github.com/ninja-build/ninja/releases/download/v1.13.1/ninja-win.zip || exit /b 1
   ) else if "%PROCESSOR_ARCHITECTURE%" equ "ARM64" (
-    curl -Lsf -o ninja-win.zip https://github.com/ninja-build/ninja/releases/download/v1.12.1/ninja-winarm64.zip || exit /b 1
-  ) else if "%PROCESSOR_ARCHITECTURE%" equ "x86" (
-    curl -LOsf https://github.com/ninja-build/ninja/releases/download/v1.12.1/ninja-win.zip || exit /b 1
+    curl -Lsf -o ninja-win.zip https://github.com/ninja-build/ninja/releases/download/v1.13.1/ninja-winarm64.zip || exit /b 1
   )
   %SZIP% x -bb0 -y ninja-win.zip 1>nul 2>nul || exit /b 1
   del ninja-win.zip 1>nul 2>nul
 )
 
-rem *** download sources ***
+rem *** find Visual Studio ***
+
+set __VSCMD_ARG_NO_LOGO=1
+for /f "tokens=*" %%i in ('"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -requires Microsoft.VisualStudio.Workload.NativeDesktop -property installationPath') do set VS=%%i
+if "!VS!" equ "" (
+  echo ERROR: Visual Studio installation not found^!
+  exit /b 1
+)
+
+rem *** download llvm & mesa sources ***
 
 if "%SKIP_LLVM%" neq "" goto :no-llvm-download
 
@@ -173,10 +179,15 @@ curl -sfL https://archive.mesa3d.org/mesa-%MESA_VERSION%.tar.xz ^
   | %SZIP% x -bb0 -ttar -si -aoa 1>nul 2>nul
 rd /s /q mesa.src 1>nul 2>nul
 move mesa-%MESA_VERSION% mesa.src 1>nul 2>nul
-git apply -p0 --directory=mesa.src mesa.patch || exit /b 1
+
+git apply --directory=mesa.src patches/mesa-require-dxheaders.patch    || exit /b 1
+git apply --directory=mesa.src patches/mesa-msvc-arm64-build-fix.patch || exit /b 1
+git apply --directory=mesa.src patches/mesa-msvc-warning-fix.patch     || exit /b 1
+git apply --directory=mesa.src patches/gallium-use-tex-cache.patch     || exit /b 1
+git apply --directory=mesa.src patches/gallium-static-build.patch      || exit /b 1
 
 mkdir mesa.src\subprojects\llvm
-copy meson.llvm.build mesa.src\subprojects\llvm\meson.build
+copy meson\meson.llvm.build mesa.src\subprojects\llvm\meson.build
 
 if not exist winflexbison (
   echo Downloading win_flex_bison
@@ -191,15 +202,6 @@ if not exist winflexbison (
 
 del "@PaxHeader" "HEAD" "pax_global_header" 1>nul 2>nul
 
-rem *** Visual Studio ***
-
-set __VSCMD_ARG_NO_LOGO=1
-for /f "tokens=*" %%i in ('"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -requires Microsoft.VisualStudio.Workload.NativeDesktop -property installationPath') do set VS=%%i
-if "!VS!" equ "" (
-  echo ERROR: Visual Studio installation not found
-  exit /b 1
-)
-
 rem *** llvm ***
 
 if "%SKIP_LLVM%" neq "" (
@@ -211,6 +213,7 @@ if "!TARGET_ARCH!" neq "!HOST_ARCH!" (
 
   call "!VS!\Common7\Tools\VsDevCmd.bat" -arch=!HOST_ARCH! -host_arch=!HOST_ARCH! -startdir=none -no_logo || exit /b 1
   cmake ^
+    -Wno-dev ^
     -G Ninja ^
     -S llvm.src ^
     -B llvm.build-native ^
@@ -254,6 +257,7 @@ if "!TARGET_ARCH!" neq "!HOST_ARCH!" (
 
 call "!VS!\Common7\Tools\VsDevCmd.bat" -arch=!TARGET_ARCH! -host_arch=!HOST_ARCH! -startdir=none -no_logo || exit /b 1
 cmake ^
+  -Wno-dev ^
   -G Ninja ^
   -S llvm.src ^
   -B llvm.build-%MESA_ARCH% ^
@@ -316,9 +320,9 @@ meson setup ^
   -Dvideo-codecs= ^
   -Dgallium-drivers=llvmpipe ^
   -Dvulkan-drivers=swrast ^
-  -Degl=disabled ^
-  -Dgles1=disabled ^
-  -Dgles2=disabled ^
+  -Degl=enabled ^
+  -Dgles1=enabled ^
+  -Dgles2=enabled ^
   !MESON_CROSS! || exit /b 1
 ninja -C mesa.build-%MESA_ARCH% install || exit /b 1
 python mesa.src\src\vulkan\util\vk_icd_gen.py --api-version 1.4 --xml mesa.src\src\vulkan\registry\vk.xml --lib-path vulkan_lvp.dll --out mesa-llvmpipe-%MESA_ARCH%\bin\lvp_icd.!TARGET_ARCH_NAME!.json || exit /b 1
@@ -339,9 +343,9 @@ meson setup ^
   -Dvideo-codecs=all ^
   -Dgallium-drivers=d3d12 ^
   -Dvulkan-drivers=microsoft-experimental ^
-  -Degl=disabled ^
-  -Dgles1=disabled ^
-  -Dgles2=disabled ^
+  -Degl=enabled ^
+  -Dgles1=enabled ^
+  -Dgles2=enabled ^
   !MESON_CROSS! || exit /b 1
 ninja -C mesa.build-%MESA_ARCH% install || exit /b 1
 python mesa.src\src\vulkan\util\vk_icd_gen.py --api-version 1.1 --xml mesa.src\src\vulkan\registry\vk.xml --lib-path vulkan_dzn.dll --out mesa-d3d12-%MESA_ARCH%\bin\dzn_icd.!TARGET_ARCH_NAME!.json || exit /b 1
@@ -353,8 +357,9 @@ if exist "%ProgramFiles(x86)%\Windows Kits\10\Redist\D3D\%MESA_ARCH%\dxil.dll" (
 
 rem *** zink ***
 
+git apply --directory=mesa.src patches/zink-static-build.patch || exit /b 1
+
 rd /s /q mesa.build-%MESA_ARCH% 1>nul 2>nul
-git apply -p0 --directory=mesa.src mesa-zink.patch || exit /b 1
 meson setup ^
   mesa.build-%MESA_ARCH% ^
   mesa.src ^
@@ -367,50 +372,71 @@ meson setup ^
   -Dplatforms=windows ^
   -Dvideo-codecs= ^
   -Dgallium-drivers=zink ^
-  -Degl=disabled ^
-  -Dgles1=disabled ^
-  -Dgles2=disabled ^
+  -Degl=enabled ^
+  -Dgles1=enabled ^
+  -Dgles2=enabled ^
   !MESON_CROSS! || exit /b 1
 ninja -C mesa.build-%MESA_ARCH% install || exit /b 1
 
 rem *** done ***
+
 rem output is in mesa-llvmpipe, mesa-d3d12, mesa-zink folders
 
 if "%GITHUB_WORKFLOW%" neq "" (
-  mkdir archive-llvmpipe
-  pushd archive-llvmpipe
-  copy /y ..\mesa-llvmpipe-%MESA_ARCH%\bin\opengl32.dll .
-  %SZIP% a -mx=9 ..\mesa-llvmpipe-%MESA_ARCH%-%MESA_VERSION%.zip 
+  mkdir archive-llvmpipe-%MESA_ARCH%
+  pushd archive-llvmpipe-%MESA_ARCH%
+  copy /y ..\mesa-llvmpipe-%MESA_ARCH%\bin\opengl32.dll     .           || exit /b 1
+  copy /y ..\mesa-llvmpipe-%MESA_ARCH%\bin\libEGL.dll       .           || exit /b 1
+  copy /y ..\mesa-llvmpipe-%MESA_ARCH%\lib\libEGL.lib       .           || exit /b 1
+  copy /y ..\mesa-llvmpipe-%MESA_ARCH%\bin\libGLESv1_CM.dll .           || exit /b 1
+  copy /y ..\mesa-llvmpipe-%MESA_ARCH%\lib\libGLESv1_CM.lib .           || exit /b 1
+  copy /y ..\mesa-llvmpipe-%MESA_ARCH%\bin\libGLESv2.dll    .           || exit /b 1
+  copy /y ..\mesa-llvmpipe-%MESA_ARCH%\lib\libGLESv2.lib    .           || exit /b 1
+  %SZIP% a -mx=9 -mqs=on ..\mesa-llvmpipe-%MESA_ARCH%-%MESA_VERSION%.7z || exit /b 1
   popd
 
-  mkdir archive-lavapipe
-  pushd archive-lavapipe
-  copy /y ..\mesa-llvmpipe-%MESA_ARCH%\bin\vulkan_lvp.dll .
-  copy /y ..\mesa-llvmpipe-%MESA_ARCH%\bin\lvp_icd.!TARGET_ARCH_NAME!.json .
-  %SZIP% a -mx=9 ..\mesa-lavapipe-%MESA_ARCH%-%MESA_VERSION%.zip 
+  mkdir archive-lavapipe-%MESA_ARCH%
+  pushd archive-lavapipe-%MESA_ARCH%
+  copy /y ..\mesa-llvmpipe-%MESA_ARCH%\bin\vulkan_lvp.dll                  . || exit /b 1
+  copy /y ..\mesa-llvmpipe-%MESA_ARCH%\bin\lvp_icd.!TARGET_ARCH_NAME!.json . || exit /b 1
+  %SZIP% a -mx=9 -mqs=on ..\mesa-lavapipe-%MESA_ARCH%-%MESA_VERSION%.7z      || exit /b 1
   popd
 
-  mkdir archive-d3d12
-  pushd archive-d3d12
-  copy /y ..\mesa-d3d12-%MESA_ARCH%\bin\opengl32.dll .
-  copy /y ..\mesa-d3d12-%MESA_ARCH%\bin\dxil.dll .
-  %SZIP% a -mx=9 ..\mesa-d3d12-%MESA_ARCH%-%MESA_VERSION%.zip 
+  mkdir archive-d3d12-%MESA_ARCH%
+  pushd archive-d3d12-%MESA_ARCH%
+  copy /y ..\mesa-d3d12-%MESA_ARCH%\bin\dxil.dll         .           || exit /b 1
+  copy /y ..\mesa-d3d12-%MESA_ARCH%\bin\opengl32.dll     .           || exit /b 1
+  copy /y ..\mesa-d3d12-%MESA_ARCH%\bin\libEGL.dll       .           || exit /b 1
+  copy /y ..\mesa-d3d12-%MESA_ARCH%\lib\libEGL.lib       .           || exit /b 1
+  copy /y ..\mesa-d3d12-%MESA_ARCH%\bin\libGLESv1_CM.dll .           || exit /b 1
+  copy /y ..\mesa-d3d12-%MESA_ARCH%\lib\libGLESv1_CM.lib .           || exit /b 1
+  copy /y ..\mesa-d3d12-%MESA_ARCH%\bin\libGLESv2.dll    .           || exit /b 1
+  copy /y ..\mesa-d3d12-%MESA_ARCH%\lib\libGLESv2.lib    .           || exit /b 1
+  %SZIP% a -mx=9 -mqs=on ..\mesa-d3d12-%MESA_ARCH%-%MESA_VERSION%.7z || exit /b 1
   popd
 
-  mkdir archive-zink
-  pushd archive-zink
-  copy /y ..\mesa-zink-%MESA_ARCH%\bin\opengl32.dll .
-  %SZIP% a -mx=9 ..\mesa-zink-%MESA_ARCH%-%MESA_VERSION%.zip 
+  mkdir archive-zink-%MESA_ARCH%
+  pushd archive-zink-%MESA_ARCH%
+  copy /y ..\mesa-zink-%MESA_ARCH%\bin\opengl32.dll     .           || exit /b 1
+  copy /y ..\mesa-zink-%MESA_ARCH%\bin\libEGL.dll       .           || exit /b 1
+  copy /y ..\mesa-zink-%MESA_ARCH%\lib\libEGL.lib       .           || exit /b 1
+  copy /y ..\mesa-zink-%MESA_ARCH%\bin\libGLESv1_CM.dll .           || exit /b 1
+  copy /y ..\mesa-zink-%MESA_ARCH%\lib\libGLESv1_CM.lib .           || exit /b 1
+  copy /y ..\mesa-zink-%MESA_ARCH%\bin\libGLESv2.dll    .           || exit /b 1
+  copy /y ..\mesa-zink-%MESA_ARCH%\lib\libGLESv2.lib    .           || exit /b 1
+  %SZIP% a -mx=9 -mqs=on ..\mesa-zink-%MESA_ARCH%-%MESA_VERSION%.7z || exit /b 1
   popd
 
-  mkdir archive-dzn
-  pushd archive-dzn
-  copy /y ..\mesa-d3d12-%MESA_ARCH%\bin\vulkan_dzn.dll .
-  copy /y ..\mesa-d3d12-%MESA_ARCH%\bin\dxil.dll .
-  copy /y ..\mesa-d3d12-%MESA_ARCH%\bin\dzn_icd.!TARGET_ARCH_NAME!.json .
-  %SZIP% a -mx=9 ..\mesa-dzn-%MESA_ARCH%-%MESA_VERSION%.zip
+  mkdir archive-dzn-%MESA_ARCH%
+  pushd archive-dzn-%MESA_ARCH%
+  copy /y ..\mesa-d3d12-%MESA_ARCH%\bin\dxil.dll                        . || exit /b 1
+  copy /y ..\mesa-d3d12-%MESA_ARCH%\bin\vulkan_dzn.dll                  . || exit /b 1
+  copy /y ..\mesa-d3d12-%MESA_ARCH%\bin\dzn_icd.!TARGET_ARCH_NAME!.json . || exit /b 1
+  %SZIP% a -mx=9 -mqs=on ..\mesa-dzn-%MESA_ARCH%-%MESA_VERSION%.7z        || exit /b 1
   popd
 
-  echo LLVM_VERSION=%LLVM_VERSION%>>%GITHUB_OUTPUT%
-  echo MESA_VERSION=%MESA_VERSION%>>%GITHUB_OUTPUT%
+  echo LLVM_VERSION=%LLVM_VERSION%>>"%GITHUB_OUTPUT%"
+  echo MESA_VERSION=%MESA_VERSION%>>"%GITHUB_OUTPUT%"
 )
+
+echo Done^^!
