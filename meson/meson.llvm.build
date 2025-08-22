@@ -2,93 +2,96 @@ project('llvm', ['cpp'])
 
 cpp = meson.get_compiler('cpp')
 
-deps = ['LLVMAggressiveInstCombine',
-        'LLVMAnalysis',
-        'LLVMAsmParser',
-        'LLVMAsmPrinter',
-        'LLVMBinaryFormat',
-        'LLVMBitReader',
-        'LLVMBitstreamReader',
-        'LLVMBitWriter',
-        'LLVMCFGuard',
-        'LLVMCGData',
-        'LLVMCodeGen',
-        'LLVMCodeGenTypes',
-        'LLVMCore',
-        'LLVMCoroutines',
-        'LLVMDebugInfoBTF',
-        'LLVMDebugInfoCodeView',
-        'LLVMDebugInfoDWARF',
-        'LLVMDebugInfoMSF',
-        'LLVMDebugInfoPDB',
-        'LLVMDemangle',
-        'LLVMExecutionEngine',
-        'LLVMFrontendAtomic',
-        'LLVMFrontendOffloading',
-        'LLVMFrontendOpenMP',
-        'LLVMGlobalISel',
-        'LLVMHipStdPar',
-        'LLVMInstCombine',
-        'LLVMInstrumentation',
-        'LLVMInterpreter',
-        'LLVMipo',
-        'LLVMIRPrinter',
-        'LLVMIRReader',
-        'LLVMLinker',
-        'LLVMMC',
-        'LLVMMCA',
-        'LLVMMCDisassembler',
-        'LLVMMCJIT',
-        'LLVMMCParser',
-        'LLVMObjCARCOpts',
-        'LLVMObject',
-        'LLVMOrcShared',
-        'LLVMOrcTargetProcess',
-        'LLVMPasses',
-        'LLVMProfileData',
-        'LLVMRemarks',
-        'LLVMRuntimeDyld',
-        'LLVMSandboxIR',
-        'LLVMScalarOpts',
-        'LLVMSelectionDAG',
-        'LLVMSupport',
-        'LLVMSymbolize',
-        'LLVMTarget',
-        'LLVMTargetParser',
-        'LLVMTextAPI',
-        'LLVMTransformUtils',
-        'LLVMVectorize']
+llvm_version = '21.1.0'
+
+llvm_deps = ['LLVMAggressiveInstCombine',
+             'LLVMAnalysis',
+             'LLVMAsmParser',
+             'LLVMAsmPrinter',
+             'LLVMBinaryFormat',
+             'LLVMBitReader',
+             'LLVMBitstreamReader',
+             'LLVMBitWriter',
+             'LLVMCFGuard',
+             'LLVMCGData',
+             'LLVMCodeGen',
+             'LLVMCodeGenTypes',
+             'LLVMCore',
+             'LLVMCoroutines',
+             'LLVMDebugInfoBTF',
+             'LLVMDebugInfoCodeView',
+             'LLVMDebugInfoDWARF',
+             'LLVMDebugInfoDWARFLowLevel',
+             'LLVMDebugInfoGSYM',
+             'LLVMDebugInfoMSF',
+             'LLVMDebugInfoPDB',
+             'LLVMDemangle',
+             'LLVMExecutionEngine',
+             'LLVMFrontendAtomic',
+             'LLVMFrontendOffloading',
+             'LLVMFrontendOpenMP',
+             'LLVMGlobalISel',
+             'LLVMHipStdPar',
+             'LLVMInstCombine',
+             'LLVMInstrumentation',
+             'LLVMInterpreter',
+             'LLVMipo',
+             'LLVMIRPrinter',
+             'LLVMIRReader',
+             'LLVMLinker',
+             'LLVMMC',
+             'LLVMMCA',
+             'LLVMMCDisassembler',
+             'LLVMMCJIT',
+             'LLVMMCParser',
+             'LLVMObjCARCOpts',
+             'LLVMObject',
+             'LLVMObjectYAML',
+             'LLVMOrcShared',
+             'LLVMOrcTargetProcess',
+             'LLVMPasses',
+             'LLVMProfileData',
+             'LLVMRemarks',
+             'LLVMRuntimeDyld',
+             'LLVMSandboxIR',
+             'LLVMScalarOpts',
+             'LLVMSelectionDAG',
+             'LLVMSupport',
+             'LLVMSymbolize',
+             'LLVMTarget',
+             'LLVMTargetParser',
+             'LLVMTextAPI',
+             'LLVMTransformUtils',
+             'LLVMVectorize']
 
 if host_machine.cpu_family() == 'aarch64'
-  folder = '../../../llvm-arm64'
-  deps += ['LLVMAArch64AsmParser',
-           'LLVMAArch64CodeGen',
-           'LLVMAArch64Desc',
-           'LLVMAArch64Disassembler',
-           'LLVMAArch64Info',
-           'LLVMAArch64Utils']
+  llvm_arch = 'arm64'
+  llvm_deps += ['LLVMAArch64AsmParser',
+                'LLVMAArch64CodeGen',
+                'LLVMAArch64Desc',
+                'LLVMAArch64Disassembler',
+                'LLVMAArch64Info',
+                'LLVMAArch64Utils']
 else
-  if host_machine.cpu_family() == 'x86_64'
-    folder = '../../../llvm-x64'
-  else
-    folder = '../../../llvm-x86'
-  endif
-  deps += ['LLVMX86AsmParser',
-           'LLVMX86CodeGen',
-           'LLVMX86Desc',
-           'LLVMX86Disassembler',
-           'LLVMX86Info',
-           'LLVMX86TargetMCA']
+  llvm_arch = host_machine.cpu_family() == 'x86_64' ? 'x64' : 'x86'
+  llvm_deps += ['LLVMX86AsmParser',
+                'LLVMX86CodeGen',
+                'LLVMX86Desc',
+                'LLVMX86Disassembler',
+                'LLVMX86Info',
+                'LLVMX86TargetMCA']
 endif
 
-_deps = []
-_search = join_paths(meson.current_source_dir(), folder + '/lib')
-foreach d : deps
-  _deps += cpp.find_library(d, dirs : _search)
+llvm_folder = '../../../llvm-@0@-@1@'.format(llvm_version, llvm_arch)
+llvm_lib_dir = join_paths(meson.current_source_dir(), llvm_folder + '/lib')
+
+deps = []
+foreach d : llvm_deps
+  deps += cpp.find_library(d, dirs : llvm_lib_dir)
 endforeach
 
 dep_llvm = declare_dependency(
-  include_directories : include_directories(folder + '/include'),
-  dependencies : _deps,
-  version : '20.1.8',
+  include_directories : include_directories(llvm_folder + '/include'),
+  dependencies : deps,
+  version : llvm_version,
 )
