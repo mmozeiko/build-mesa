@@ -1,8 +1,11 @@
 @echo off
 setlocal enabledelayedexpansion
 
-set MESA_VERSION=25.2.1
+set MESA_VERSION=25.2.2
+set MESA_SHA256=43d7abcd4aa8049d8fd75538344a374104765e81e17b4a6314cee2c0160e4412
+
 set LLVM_VERSION=21.1.0
+set LLVM_SHA256=1672e3efb4c2affd62dbbe12ea898b28a451416c7d95c1bd0190c26cbe878825
 set LLVM_RELEASE=https://discourse.llvm.org/t/llvm-21-1-0-released/88066
 
 >nul find "'%LLVM_VERSION%'" meson\meson.llvm.build || (
@@ -120,7 +123,7 @@ if exist "llvm-%LLVM_VERSION%-%MESA_ARCH%\lib\LLVMSupport.lib" (
   goto :skip-llvm-build
 )
 
-call :get "https://github.com/llvm/llvm-project/releases/download/llvmorg-%LLVM_VERSION%/llvm-project-%LLVM_VERSION%.src.tar.xz" "llvm-project-%LLVM_VERSION%.src" "1672e3efb4c2affd62dbbe12ea898b28a451416c7d95c1bd0190c26cbe878825" || exit /b 1
+call :get "https://github.com/llvm/llvm-project/releases/download/llvmorg-%LLVM_VERSION%/llvm-project-%LLVM_VERSION%.src.tar.xz" "llvm-project-%LLVM_VERSION%.src" "%LLVM_SHA256%" || exit /b 1
 
 if "%TARGET_ARCH%" neq "%HOST_ARCH%" (
 
@@ -225,11 +228,9 @@ rem *** download mesa source ***
 
 rd /s /q mesa-%MESA_VERSION% 1>nul 2>nul
 
-call :get "https://archive.mesa3d.org/mesa-%MESA_VERSION%.tar.xz" "mesa-%MESA_VERSION%" "c124372189d35f48e049ee503029171c68962c580971cb86d968a6771c965ba4" || exit /b 1
+call :get "https://archive.mesa3d.org/mesa-%MESA_VERSION%.tar.xz" "mesa-%MESA_VERSION%" "%MESA_SHA256%" || exit /b 1
 
 git.exe apply --directory=mesa-%MESA_VERSION% patches/mesa-require-dxheaders.patch    || exit /b 1
-git.exe apply --directory=mesa-%MESA_VERSION% patches/mesa-msvc-arm64-build-fix.patch || exit /b 1
-git.exe apply --directory=mesa-%MESA_VERSION% patches/mesa-msvc-warning-fix.patch     || exit /b 1
 git.exe apply --directory=mesa-%MESA_VERSION% patches/gallium-use-tex-cache.patch     || exit /b 1
 git.exe apply --directory=mesa-%MESA_VERSION% patches/gallium-static-build.patch      || exit /b 1
 
