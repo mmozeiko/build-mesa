@@ -2,7 +2,7 @@ project('llvm', ['cpp'])
 
 cpp = meson.get_compiler('cpp')
 
-llvm_version = '21.1.2'
+llvm_version = '21.1.3'
 
 llvm_deps = ['LLVMAggressiveInstCombine',
              'LLVMAnalysis',
