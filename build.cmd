@@ -4,9 +4,9 @@ setlocal enabledelayedexpansion
 set MESA_VERSION=25.2.6
 set MESA_SHA256=361c97e8afa5fe20141c5362c5b489040751e12861c186a16c621a2fb182fc42
 
-set LLVM_VERSION=21.1.4
-set LLVM_SHA256=a01ad7e5167780c945871d75c0413081d12067607a6de5cf71dc3e8d1a82112c
-set LLVM_RELEASE=https://discourse.llvm.org/t/llvm-21-1-4-released/88651
+set LLVM_VERSION=21.1.5
+set LLVM_SHA256=1794be4bf974e99a3fe1da4b2b9b1456c02ae9479c942f365441d8d207bd650c
+set LLVM_RELEASE=https://discourse.llvm.org/t/llvm-21-1-5-released/88776
 
 >nul find "'%LLVM_VERSION%'" meson\meson.llvm.build || (
   echo llvm version in meson.llvm.build does not match expected %LLVM_VERSION% value^^!
