@@ -14,10 +14,10 @@ index 8e995b5..315e748 100644
      idep_mesautil
    ],
 diff --git a/src/gallium/targets/wgl/meson.build b/src/gallium/targets/wgl/meson.build
-index 2999ee5..8b92387 100644
+index 3a194b3..e8418af 100644
 --- a/src/gallium/targets/wgl/meson.build
 +++ b/src/gallium/targets/wgl/meson.build
-@@ -29,10 +29,9 @@ wgl_def = custom_target(
+@@ -11,10 +11,9 @@ wgl_def = custom_target(
  )
  
  gallium_wgl_name = get_option('gallium-wgl-dll-name')
@@ -27,7 +27,7 @@ index 2999ee5..8b92387 100644
    ['wgl.c'],
 -  vs_module_defs : wgl_def,
    include_directories : [
-     inc_include, inc_src, inc_mapi, inc_mesa, inc_gallium, inc_gallium_aux, inc_wgl, inc_gallium_winsys, inc_gallium_winsys_sw, inc_gallium_drivers,
+     inc_include, inc_src, inc_mesa, inc_gallium, inc_gallium_aux, inc_wgl, inc_gallium_winsys, inc_gallium_winsys_sw, inc_gallium_drivers,
    ],
 diff --git a/src/egl/meson.build b/src/egl/meson.build
 index 66bb48d..c6e0436 100644
@@ -51,27 +51,27 @@ index 1e6cf18..94d2ecd 100644
  MesaGLInteropEGLFlushObjects
 +
 +_mesa_glapi_get_dispatch
-diff --git a/src/mapi/es1api/meson.build b/src/mapi/es1api/meson.build
-index 6757645..87badbe 100644
---- a/src/mapi/es1api/meson.build
-+++ b/src/mapi/es1api/meson.build
+diff --git a/src/mesa/glapi/es1api/meson.build b/src/mesa/glapi/es1api/meson.build
+index 3ae36ff..68d147d 100644
+--- a/src/mesa/glapi/es1api/meson.build
++++ b/src/mesa/glapi/es1api/meson.build
 @@ -34,7 +34,7 @@ libglesv1_cm = shared_library(
    gnu_symbol_visibility : 'hidden',
    link_args : [ld_args_gc_sections],
-   include_directories : [inc_src, inc_include, inc_mapi],
+   include_directories : [inc_mesa, inc_src, inc_include],
 -  link_with : shared_glapi_lib,
 +  link_with : libegl,
    dependencies : [dep_thread, dep_libdrm, dep_m, dep_dl, idep_mesautilc11],
    soversion : host_machine.system() == 'windows' ? '' : '1',
    version : '1.1.0',
-diff --git a/src/mapi/es2api/meson.build.org b/src/mapi/es2api/meson.build
-index 8202e03..04c37d7 100644
---- a/src/mapi/es2api/meson.build
-+++ b/src/mapi/es2api/meson.build
+diff --git a/src/mesa/glapi/es2api/meson.build b/src/mesa/glapi/es2api/meson.build
+index be999c1..549d592 100644
+--- a/src/mesa/glapi/es2api/meson.build
++++ b/src/mesa/glapi/es2api/meson.build
 @@ -34,7 +34,7 @@ libgles2 = shared_library(
    gnu_symbol_visibility : 'hidden',
    link_args : [ld_args_gc_sections],
-   include_directories : [inc_src, inc_include, inc_mapi],
+   include_directories : [inc_mesa, inc_src, inc_include],
 -  link_with : shared_glapi_lib,
 +  link_with : libegl,
    dependencies : [dep_thread, dep_libdrm, dep_m, dep_dl, idep_mesautilc11],

@@ -2,7 +2,7 @@
 
 Automatic builds of [mesa][] OpenGL & Vulkan implementations for Windows (x86, x64, arm64).
 
-Builds are linked **statically** to their dependencies, just place necessary dll file(s) next to your exe.
+Builds are **static** linked to their dependencies, just place necessary dll file(s) next to your exe.
 
 # Download
 
@@ -13,13 +13,14 @@ Binaries available as 7z archive in [latest release][] page. Following builds ar
 * [zink][] - [Collabora][collabora-zink] implementation of OpenGL using Vulkan
 * [lavapipe][] - software implementation of Vulkan using [LLVM][]
 * dzn - Microsoft implementation of Vulkan using D3D12
+* [mft][] -  hardware accelerated video encoders for AVC, HEVC and AV1 using D3D12
 
 # Using OpenGL
 
 All OpenGL implementations (llvmpipe, d3d12, zink) come in two flavors:
 
-* `opengl32.dll` file - use [WGL] to create GL context
-* `libEGL.dll` file - use [EGL] to create GL context
+* `opengl32.dll` file - use [WGL][] to create GL context
+* `libEGL.dll` file - use [EGL][] to create GL context
 
 Both options support creating context for full [OpenGL][GL] (core and compatibility), and [OpenGL ES][GLES] v1/2/3.
 
@@ -48,23 +49,30 @@ offscreen context without dependency on any windowing system.
 
 # Using D3D12 for OpenGL/Vulkan
 
-When using d3d12 opengl driver or dzn vulkan implementation you need to distribute `dxil.dll` file too!
+When using d3d12 opengl driver or dzn vulkan implementation you need to also distribute `dxil.dll` file!
 
 # Using lavapipe/dzn for Vulkan
 
 To use Vulkan implementations, set [VK_DRIVER_FILES][] env variable to `dzn_icd.x86_64.json` or `lvp_icd.x86_64.json`
+
+# Using MFT video encoders
+
+To use MFT encoders use `regsvr32.exe` on binaries to register encoders globally in the system, then they will be
+available using regular MFT encoder enumeration. Alternatively use [DllGetClassObject][] export from dll files to
+create [IClassFactory][] object that provides [IClassFactory::CreateInstance][] method to create MFT encoder COM
+object explicitly. For CLSID guids for encoders see [this file][mft-guids].
 
 # Building locally
 
 First make sure you have installed all necessary depenendencies:
 
 * [Python][] - with [pip][] for installing `meson`, `packaging`, `mako` and `yaml` packages if they are missing
-* [Visual Studio 2022][] - with [Desktop development with C++][workload] workload installed
+* [Visual Studio 2022][] (or 2026) - with [Desktop development with C++][workload] workload installed
 * [7-Zip][] - either full installer, or just `7za.exe` file from "7-Zip Extra" archive
 * [CMake][]
 * [Git][]
-* [ninja.exe] - will be automatically downloaded if missing
-* curl.exe - nowadays comes with [Windows 10/11][curl.exe]
+* [ninja.exe][] - will be automatically downloaded if missing
+* `tar.exe` and `curl.exe` - nowadays comes with [Windows 10/11][curl.exe]
 
 Then run `build.cmd` batch file when these tools are installed. It accepts optional argument specifying architecture:
 
@@ -102,3 +110,8 @@ Output files will be placed in `mesa-[name]-[arch]` folders.
 [Git]: https://git-scm.com/downloads/win
 [curl.exe]: https://techcommunity.microsoft.com/blog/containers/tar-and-curl-come-to-windows/382409
 [ninja.exe]: https://ninja-build.org/
+[mft]: https://learn.microsoft.com/en-us/windows/win32/medfound/media-foundation-transforms
+[DllGetClassObject]: https://learn.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-dllgetclassobject
+[IClassFactory]: https://learn.microsoft.com/en-us/windows/win32/api/unknwn/nn-unknwn-iclassfactory
+[IClassFactory::CreateInstance]: https://learn.microsoft.com/en-us/windows/win32/api/unknwn/nf-unknwn-iclassfactory-createinstance
+[mft-guids]: https://gitlab.freedesktop.org/mesa/mesa/-/blob/mesa-25.3.0/src/gallium/targets/mediafoundation/dllmain.cpp?ref_type=tags#L35-45

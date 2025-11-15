@@ -1,8 +1,8 @@
 @echo off
 setlocal enabledelayedexpansion
 
-set MESA_VERSION=25.2.7
-set MESA_SHA256=b40232a642011820211aab5a9cdf754e106b0bce15044bc4496b0ac9615892ad
+set MESA_VERSION=25.3.0
+set MESA_SHA256=0fd54fea7dbbddb154df05ac752b18621f26d97e27863db3be951417c6abe8ae
 
 set LLVM_VERSION=21.1.5
 set LLVM_SHA256=1794be4bf974e99a3fe1da4b2b9b1456c02ae9479c942f365441d8d207bd650c
@@ -230,6 +230,8 @@ rd /s /q mesa-%MESA_VERSION% 1>nul 2>nul
 
 call :get "https://archive.mesa3d.org/mesa-%MESA_VERSION%.tar.xz" "mesa-%MESA_VERSION%" "%MESA_SHA256%" || exit /b 1
 
+curl.exe -sfL https://gitlab.freedesktop.org/mesa/mesa/-/merge_requests/38029.patch | git.exe apply --directory=mesa-%MESA_VERSION% || exit /b 1
+
 git.exe apply --directory=mesa-%MESA_VERSION% patches/mesa-require-dxheaders.patch    || exit /b 1
 git.exe apply --directory=mesa-%MESA_VERSION% patches/gallium-use-tex-cache.patch     || exit /b 1
 git.exe apply --directory=mesa-%MESA_VERSION% patches/gallium-static-build.patch      || exit /b 1
@@ -274,6 +276,8 @@ meson.exe setup ^
   -Dllvm=disabled ^
   -Dplatforms=windows ^
   -Dvideo-codecs=all ^
+  -Dmediafoundation-codecs=all ^
+  -Dgallium-mediafoundation=enabled ^
   -Dgallium-drivers=d3d12 ^
   -Dvulkan-drivers=microsoft-experimental ^
   -Degl=enabled ^
@@ -364,6 +368,14 @@ if "%GITHUB_WORKFLOW%" neq "" (
   copy /y ..\mesa-d3d12-%MESA_ARCH%\bin\vulkan_dzn.dll                  . || exit /b 1
   copy /y ..\mesa-d3d12-%MESA_ARCH%\bin\dzn_icd.%TARGET_ARCH_NAME%.json . || exit /b 1
   %SZIP% a -mx=9 -mqs=on ..\mesa-dzn-%MESA_ARCH%-%MESA_VERSION%.7z        || exit /b 1
+  popd
+
+  mkdir archive-mft-%MESA_ARCH%
+  pushd archive-mft-%MESA_ARCH%
+  copy /y ..\mesa-d3d12-%MESA_ARCH%\bin\msh264enchmft.dll          . || exit /b 1
+  copy /y ..\mesa-d3d12-%MESA_ARCH%\bin\msh265enchmft.dll          . || exit /b 1
+  copy /y ..\mesa-d3d12-%MESA_ARCH%\bin\msav1enchmft.dll           . || exit /b 1
+  %SZIP% a -mx=9 -mqs=on ..\mesa-mft-%MESA_ARCH%-%MESA_VERSION%.7z   || exit /b 1
   popd
 
   echo MESA_VERSION=%MESA_VERSION%>>"%GITHUB_OUTPUT%"
