@@ -4,9 +4,9 @@ setlocal enabledelayedexpansion
 set MESA_VERSION=25.3.0
 set MESA_SHA256=0fd54fea7dbbddb154df05ac752b18621f26d97e27863db3be951417c6abe8ae
 
-set LLVM_VERSION=21.1.5
-set LLVM_SHA256=1794be4bf974e99a3fe1da4b2b9b1456c02ae9479c942f365441d8d207bd650c
-set LLVM_RELEASE=https://discourse.llvm.org/t/llvm-21-1-5-released/88776
+set LLVM_VERSION=21.1.6
+set LLVM_SHA256=ae67086eb04bed7ca11ab880349b5f1ab6f50e1b88cda376eaf8a845b935762b
+set LLVM_RELEASE=https://discourse.llvm.org/t/llvm-21-1-6-released/88895
 
 >nul find "'%LLVM_VERSION%'" meson\meson.llvm.build || (
   echo llvm version in meson.llvm.build does not match expected %LLVM_VERSION% value^^!
@@ -37,7 +37,7 @@ if "%MESA_ARCH%" equ "x86" (
   set LLVM_TARGETS_TO_BUILD=X86
   set TARGET_ARCH_NAME=i686
 ) else if "%MESA_ARCH%" equ "x64" (
-  set TARGET_ARCH=amd64
+  set TARGET_ARCH=x64
   set LLVM_TARGETS_TO_BUILD=X86
   set TARGET_ARCH_NAME=x86_64
 ) else if "%MESA_ARCH%" equ "arm64" (
