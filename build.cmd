@@ -1,8 +1,8 @@
 @echo off
 setlocal enabledelayedexpansion
 
-set MESA_VERSION=25.3.0
-set MESA_SHA256=0fd54fea7dbbddb154df05ac752b18621f26d97e27863db3be951417c6abe8ae
+set MESA_VERSION=25.3.1
+set MESA_SHA256=059d0d985622f49588f01aa29152804f4da8ffe6add046e00a52923379c2d8da
 
 set LLVM_VERSION=21.1.7
 set LLVM_SHA256=e5b65fd79c95c343bb584127114cb2d252306c1ada1e057899b6aacdd445899e
@@ -229,8 +229,6 @@ rem *** download mesa source ***
 rd /s /q mesa-%MESA_VERSION% 1>nul 2>nul
 
 call :get "https://archive.mesa3d.org/mesa-%MESA_VERSION%.tar.xz" "mesa-%MESA_VERSION%" "%MESA_SHA256%" || exit /b 1
-
-curl.exe -sfL https://gitlab.freedesktop.org/mesa/mesa/-/merge_requests/38029.patch | git.exe apply --directory=mesa-%MESA_VERSION% || exit /b 1
 
 git.exe apply --directory=mesa-%MESA_VERSION% patches/mesa-require-dxheaders.patch    || exit /b 1
 git.exe apply --directory=mesa-%MESA_VERSION% patches/gallium-use-tex-cache.patch     || exit /b 1
