@@ -47,10 +47,6 @@ Be careful **NOT** to link with `opengl32.dll` file when using EGL - in such cas
 With EGL you can use [EGL_MESA_platform_surfaceless][] extension with [eglGetPlatformDisplay][] function to create
 offscreen context without dependency on any windowing system.
 
-# Using D3D12 for OpenGL/Vulkan
-
-When using d3d12 opengl driver or dzn vulkan implementation you need to also distribute `dxil.dll` file!
-
 # Using lavapipe/dzn for Vulkan
 
 To use Vulkan implementations, set [VK_DRIVER_FILES][] env variable to `dzn_icd.x86_64.json` or `lvp_icd.x86_64.json`
