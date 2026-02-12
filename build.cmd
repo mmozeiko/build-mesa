@@ -4,9 +4,9 @@ setlocal enabledelayedexpansion
 set MESA_VERSION=25.3.5
 set MESA_SHA256=be472413475082df945e0f9be34f5af008baa03eb357e067ce5a611a2d44c44b
 
-set LLVM_VERSION=21.1.8
-set LLVM_SHA256=4633a23617fa31a3ea51242586ea7fb1da7140e426bd62fc164261fe036aa142
-set LLVM_RELEASE=https://discourse.llvm.org/t/llvm-21-1-8-released/89144
+set LLVM_VERSION=22.1.0-rc3
+set LLVM_SHA256=cfccf081ae6ee6ae7367b1915acccb8935c030d74b33b6e833bf5e2f03d96a30
+set LLVM_RELEASE=https://discourse.llvm.org/t/llvm-22-1-0-rc3-released/89769
 
 >nul find "'%LLVM_VERSION%'" meson\meson.llvm.build || (
   echo llvm version in meson.llvm.build does not match expected %LLVM_VERSION% value^^!
@@ -213,6 +213,7 @@ cmake.exe ^
   -D LLVM_INCLUDE_BENCHMARKS=OFF ^
   -D LLVM_ENABLE_BINDINGS=OFF ^
   -D LLVM_OPTIMIZED_TABLEGEN=ON ^
+  -D LLVM_TOOL_LTO_BUILD=OFF ^
   -D LLVM_ENABLE_PLUGINS=OFF ^
   -D LLVM_ENABLE_IDE=OFF || exit /b 1
 ninja.exe -C llvm-project-%LLVM_VERSION%.build-%MESA_ARCH% llvm-headers llvm-libraries || exit /b 1

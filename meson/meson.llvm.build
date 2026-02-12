@@ -2,7 +2,7 @@ project('llvm', ['cpp'])
 
 cpp = meson.get_compiler('cpp')
 
-llvm_version = '21.1.8'
+llvm_version = '22.1.0-rc3'
 
 llvm_deps = ['LLVMAggressiveInstCombine',
              'LLVMAnalysis',
@@ -28,6 +28,8 @@ llvm_deps = ['LLVMAggressiveInstCombine',
              'LLVMDemangle',
              'LLVMExecutionEngine',
              'LLVMFrontendAtomic',
+             'LLVMFrontendDirective',
+             'LLVMFrontendHLSL',
              'LLVMFrontendOffloading',
              'LLVMFrontendOpenMP',
              'LLVMGlobalISel',
