@@ -2,11 +2,11 @@ diff --git a/meson.build b/meson.build
 index 427cfde..0fdf8bd 100644
 --- a/meson.build
 +++ b/meson.build
-@@ -592,7 +592,7 @@ if with_dri
+@@ -642,7 +642,7 @@ if with_dri
  endif
  
  dep_dxheaders = null_dep
--if with_gallium_d3d12 or with_microsoft_clc or with_microsoft_vk or with_gfxstream_vk and host_machine.system() == 'windows'
+-if with_gallium_d3d12 or with_microsoft_clc or with_microsoft_vk or (with_any_vk and host_machine.system() == 'windows')
 +if true
    dep_dxheaders = dependency('directx-headers', required : false)
    if not dep_dxheaders.found()
