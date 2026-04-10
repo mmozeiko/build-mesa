@@ -263,7 +263,7 @@ meson.exe setup ^
   -Dgles2=enabled ^
   %MESON_CROSS% || exit /b 1
 ninja.exe -C mesa-build-%MESA_ARCH% install || exit /b 1
-python.exe mesa-%MESA_VERSION%\src\vulkan\util\vk_icd_gen.py --api-version 1.4 --xml mesa-%MESA_VERSION%\src\vulkan\registry\vk.xml --icd-lib-path . --icd-filename vulkan_lvp.dll --out mesa-llvmpipe-%MESA_ARCH%\bin\lvp_icd.%TARGET_ARCH_NAME%.json || exit /b 1
+python.exe mesa-%MESA_VERSION%\src\vulkan\util\vk_icd_gen.py --api-version 1.4 --xml mesa-%MESA_VERSION%\src\vulkan\registry\vk.xml --icd-lib-path . --icd-filename vulkan_lvp.dll --use-backslash --out mesa-llvmpipe-%MESA_ARCH%\bin\lvp_icd.%TARGET_ARCH_NAME%.json || exit /b 1
 
 rem *** d3d12, dzn ***
 
@@ -289,7 +289,7 @@ meson.exe setup ^
   -Dgles2=enabled ^
   %MESON_CROSS% || exit /b 1
 ninja.exe -C mesa-build-%MESA_ARCH% install || exit /b 1
-python.exe mesa-%MESA_VERSION%\src\vulkan\util\vk_icd_gen.py --api-version 1.1 --xml mesa-%MESA_VERSION%\src\vulkan\registry\vk.xml --icd-lib-path . --icd-filename vulkan_dzn.dll --out mesa-d3d12-%MESA_ARCH%\bin\dzn_icd.%TARGET_ARCH_NAME%.json || exit /b 1
+python.exe mesa-%MESA_VERSION%\src\vulkan\util\vk_icd_gen.py --api-version 1.1 --xml mesa-%MESA_VERSION%\src\vulkan\registry\vk.xml --icd-lib-path . --icd-filename vulkan_dzn.dll --use-backslash --out mesa-d3d12-%MESA_ARCH%\bin\dzn_icd.%TARGET_ARCH_NAME%.json || exit /b 1
 
 rem *** zink ***
 
