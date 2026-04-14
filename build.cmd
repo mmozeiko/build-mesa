@@ -233,7 +233,6 @@ rd /s /q mesa-%MESA_VERSION% 1>nul 2>nul
 
 call :get "https://archive.mesa3d.org/mesa-%MESA_VERSION%.tar.xz" "mesa-%MESA_VERSION%" "%MESA_SHA256%" || exit /b 1
 
-git.exe apply --directory=mesa-%MESA_VERSION% patches/mesa-require-dxheaders.patch    || exit /b 1
 git.exe apply --directory=mesa-%MESA_VERSION% patches/gallium-use-tex-cache.patch     || exit /b 1
 git.exe apply --directory=mesa-%MESA_VERSION% patches/gallium-static-build.patch      || exit /b 1
 git.exe apply --directory=mesa-%MESA_VERSION% patches/dxil-hash.patch                 || exit /b 1
