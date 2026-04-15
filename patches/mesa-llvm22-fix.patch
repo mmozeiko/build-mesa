@@ -1,0 +1,76 @@
+diff --git a/src/gallium/auxiliary/gallivm/lp_bld_gather.c b/src/gallium/auxiliary/gallivm/lp_bld_gather.c
+index fa0655e8137..c4fc7dfd2a8 100644
+--- a/src/gallium/auxiliary/gallivm/lp_bld_gather.c
++++ b/src/gallium/auxiliary/gallivm/lp_bld_gather.c
+@@ -631,6 +631,20 @@ lp_build_masked_gather(struct gallivm_state *gallivm,
+    LLVMValueRef args[4];
+    char intrin_name[64];
+ 
++#if LLVM_VERSION_MAJOR >= 22
++
++   snprintf(intrin_name, 64, "llvm.masked.gather.v%ui%u.v%up0",
++            length, bit_size, length);
++
++   args[0] = offset_ptr;
++   args[1] = LLVMBuildICmp(builder, LLVMIntNE, exec_mask,
++                           LLVMConstNull(LLVMTypeOf(exec_mask)), "");
++   args[2] = LLVMConstNull(vec_type);
++   return lp_build_intrinsic(builder, intrin_name, vec_type,
++                             args, 3, 0);
++
++#else
++
+ #if LLVM_VERSION_MAJOR >= 16
+    snprintf(intrin_name, 64, "llvm.masked.gather.v%ui%u.v%up0",
+             length, bit_size, length);
+@@ -647,6 +661,7 @@ lp_build_masked_gather(struct gallivm_state *gallivm,
+    return lp_build_intrinsic(builder, intrin_name, vec_type,
+                              args, 4, 0);
+ 
++#endif
+ }
+ 
+ void
+@@ -661,6 +676,19 @@ lp_build_masked_scatter(struct gallivm_state *gallivm,
+    LLVMValueRef args[4];
+    char intrin_name[64];
+ 
++#if LLVM_VERSION_MAJOR >= 22
++   snprintf(intrin_name, 64, "llvm.masked.scatter.v%ui%u.v%up0",
++            length, bit_size, length);
++
++   args[0] = value_vec;
++   args[1] = offset_ptr;
++   args[2] = LLVMBuildICmp(builder, LLVMIntNE, exec_mask,
++                           LLVMConstNull(LLVMTypeOf(exec_mask)), "");
++   lp_build_intrinsic(builder, intrin_name, LLVMVoidTypeInContext(gallivm->context),
++                      args, 3, 0);
++
++#else
++
+ #if LLVM_VERSION_MAJOR >= 16
+    snprintf(intrin_name, 64, "llvm.masked.scatter.v%ui%u.v%up0",
+             length, bit_size, length);
+@@ -676,4 +704,6 @@ lp_build_masked_scatter(struct gallivm_state *gallivm,
+                            LLVMConstNull(LLVMTypeOf(exec_mask)), "");
+    lp_build_intrinsic(builder, intrin_name, LLVMVoidTypeInContext(gallivm->context),
+                       args, 4, 0);
++
++#endif
+ }
+diff --git a/src/gallium/auxiliary/gallivm/lp_bld_coro.c b/src/gallium/auxiliary/gallivm/lp_bld_coro.c
+index 392332b4aea..20e6064b42a 100644
+--- a/src/gallium/auxiliary/gallivm/lp_bld_coro.c
++++ b/src/gallium/auxiliary/gallivm/lp_bld_coro.c
+@@ -90,7 +90,11 @@ void lp_build_coro_end(struct gallivm_state *gallivm, LLVMValueRef coro_hdl)
+ #endif
+    lp_build_intrinsic(gallivm->builder,
+                       "llvm.coro.end",
++#if LLVM_VERSION_MAJOR >= 22
++                      LLVMVoidTypeInContext(gallivm->context),
++#else
+                       LLVMInt1TypeInContext(gallivm->context),
++#endif
+                       coro_end_args, num_args, 0);
+ }
+ 
