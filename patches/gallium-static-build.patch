@@ -81,7 +81,7 @@ diff --git a/src/meson.build b/src/meson.build
 index 70bf495..8f6aaac 100644
 --- a/src/meson.build
 +++ b/src/meson.build
-@@ -121,6 +121,9 @@ endif
+@@ -123,6 +123,9 @@ endif
  if with_gallium_or_lvp
    subdir('gallium')
  endif
@@ -91,13 +91,13 @@ index 70bf495..8f6aaac 100644
  # These require libgallium (shared_glapi_lib)
  if with_gallium and (with_glx != 'disabled' or with_egl)
    if with_gles1 and not with_glvnd
-@@ -148,9 +151,6 @@ else
+@@ -150,9 +153,6 @@ else
    dep_gbm = null_dep
  endif
  
 -if with_egl
 -  subdir('egl')
 -endif
- if with_gallium and with_gbm
+ if with_gallium
    if with_glx == 'dri' or with_platform_x11 or with_platform_xcb
      subdir('gallium/targets/dril')
