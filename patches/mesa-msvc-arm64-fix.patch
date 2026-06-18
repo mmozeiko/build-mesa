@@ -1,0 +1,22 @@
+diff --git a/src/util/u_math.c b/src/util/u_math.c
+index 337baa9..bf5b0b0 100644
+--- a/src/util/u_math.c
++++ b/src/util/u_math.c
+@@ -94,6 +94,8 @@ util_fpstate_get(void)
+    {
+ #ifdef HAVE___BUILTIN_AARCH64_GET_FPCR
+       fpstate = (unsigned)__builtin_aarch64_get_fpcr();
++#elif defined(_M_ARM64)
++      fpstate = _ReadStatusReg(ARM64_FPCR);
+ #else
+       uint64_t fpcr;
+       __asm__ volatile("mrs %0, fpcr" : "=r"(fpcr));
+@@ -159,6 +161,8 @@ util_fpstate_set(unsigned fpstate)
+    {
+ #ifdef HAVE___BUILTIN_AARCH64_SET_FPCR
+       __builtin_aarch64_set_fpcr(fpstate);
++#elif defined(_M_ARM64)
++      _WriteStatusReg(ARM64_FPCR, fpstate);
+ #else
+       uint64_t fpcr = fpstate;
+       __asm__ volatile("msr fpcr, %0" :: "r"(fpcr));
